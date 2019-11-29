@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-import os,re,xlrd,xlwt
+import os,re,xlrd,xlwt,codecs,chardet
 
 class File:
     def __init__(self,filename=None):
@@ -13,6 +13,12 @@ class File:
             self.file = os.path.join(self.filepath,self.filename+self.filetype)
             self.data = []
 
+    def detectCode(self,path):
+	    with open(path, 'rb') as file:
+		    data = file.read(200000)
+		    dicts = chardet.detect(data)
+	    return dicts["encoding"]
+
     def read_data(self):
         if self.filetype == '.txt':
             self.data = self.read_txt_file(self.file)
@@ -24,6 +30,17 @@ class File:
             self.data = self.read_xls_file(self.file)
         else:
             raise Exception(self.file + ' is invalid data file!')
+        return self.data
+
+    def write_data(self,data):
+        if self.filetype == '.txt':
+            self.write_txt_file(self.file,data)
+        elif self.filetype == '.csv':
+            self.write_csv_file(self.file,data)
+        elif self.filetype == '.xls':
+            self.write_xls_file(self.file,data)
+        elif self.filetype == '.xlsx':
+            self.write_xls_file(self.file,data)
 
     def save_as(self,file):
         (filepath, tempfilename) = os.path.split(file)
@@ -31,15 +48,16 @@ class File:
         filetype = filetype.lower()
         if filetype == '.txt':
             self.write_txt_file(file,self.data)
-        elif self.filetype == '.csv':
+        elif filetype == '.csv':
             self.write_csv_file(file,self.data)
-        elif self.filetype == '.xls':
+        elif filetype == '.xls':
             self.write_xls_file(file,self.data)
-        elif self.filetype == '.xlsx':
+        elif filetype == '.xlsx':
             self.write_xls_file(file,self.data)
 
     def read_txt_file(self,filename):
-        lines = open(filename).read().strip().splitlines()
+        encoding = self.detectCode(filename)
+        lines = open(filename,encoding=encoding).read().strip().splitlines()
         lines = filter(lambda line: not re.match(r'[^\s\d\.\+\-]',line),lines)
         points = map(lambda line:list(map(lambda x:float(x),filter(lambda x: not x == '',re.split(r'[,\s]+',line.strip())))),lines)
         return list(points)
@@ -70,6 +88,3 @@ class File:
             for j in range(len(line)):
                 ws.write(i,j,line[j])
         wb.save(filename)
-
-
-    

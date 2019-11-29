@@ -1,132 +1,70 @@
 #!/usr/bin/env python
 # coding=utf-8
 import numpy as np
+from scipy import signal, interpolate
 
 class Smooth:
-    def __init__(self,data):
-        self.data = data
-
-    def SVD_smooth(self):
+    @staticmethod
+    #根据相变方程拟合
+    def Phase_Formular(x_data,y_data):
+        #寻找相变点
         pass
 
-    def SG_smooth(self):
-        pass
+    @staticmethod
+    #Savitzky_Golay滤波器
+    def Savitzky_Golay(x_data,y_data,window,order):
+        (xint,yint) = Smooth.Spline(x_data,y_data,s=1E-6)
+        return (xint,signal.savgol_filter(yint,window,order))
 
-# import numpy as np
-# import random
-# import matplotlib.pyplot as plt
+    @staticmethod
+    #滑动平均滤波
+    def Convolve(x_data,y_data,w):
+        (xint,yint) = Smooth.Spline(x_data,y_data,s=1E-6)
+        wi=np.ones(w)/float(w)
+        return (xint,np.convolve(yint,wi,'same'))
 
-# ## 1.待处理信号(400个采样点)
-# t = np.arange(0,40,0.1)
-# r = [2*random.random() for i in range(400)]
-# x = 10*np.sin(1*t)+5*np.sin(2*t)
-# xr = x+r
+    @staticmethod
+    #插值法降噪
+    def Spline(x_data,y_data,s):
+        f = interpolate.UnivariateSpline(x_data,y_data, k=3, s=s)
+        yint = f(x_data)
+        return (x_data,yint)
 
-# ## 2.一维数组转换为二维矩阵
-# x2list = []
-# for i in range(20):
-#     x2list.append(xr[i*20:i*20+20])
-# x2array = np.array(x2list)
-
-# ## 3.奇异值分解
-# U,S,V = np.linalg.svd(x2array)  
-# S_list = list(S)
-# ## 奇异值求和
-# S_sum = sum(S)
-# ##奇异值序列归一化
-# S_normalization_list = [x/S_sum for x in S_list]
-
-# ## 4.画图
-# X = []
-# for i in range(len(S_normalization_list)):
-#     X.append(i+1)
-
-# fig1 = plt.figure().add_subplot(111)
-# fig1.plot(X,S_normalization_list)
-# fig1.set_xticks(X)
-# fig1.set_xlabel('Rank',size = 15)
-# fig1.set_ylabel('Normalize singular values',size = 15)
-# plt.show()
-    
-# ## 5.数据重构
-# K = 1 ## 保留的奇异值阶数
-# for i in range(len(S_list) - K):
-#     S_list[i+K] = 0.0
-
-# S_new = np.mat(np.diag(S_list))
-# reduceNoiseMat = np.array(U * S_new * V)
-# reduceNoiseList = []
-# for i in range(len(x2array)):
-#     for j in range(len(x2array)):
-#         reduceNoiseList.append(reduceNoiseMat[i][j])
- 
-# ## 6.去燥效果展示       
-# fig2 = plt.figure().add_subplot(111)
-# fig2.plot(t,list(xr),'b',label = 'Original data')
-# fig2.plot(t,reduceNoiseList,'r-',label = 'Processed data')
-# fig2.legend()
-# fig2.set_title('Rank is 1')
-# fig2.set_xlabel('Sampling point',size = 15)
-# fig2.set_ylabel('Value of data',size = 15)
-# plt.show()
-
-# # 获得矩阵的字段数量
-# def width(lst):
-#     i = 0;
-#     for j in lst[0]:
-#         i += 1
-#     return i
- 
- 
-# # 得到每个字段的平均值
-# def GetAverage(mat):
-#     n = len(mat)
-#     m = width(mat)
-#     num = [0] * m
-#     for i in range(0, m):
-#         for j in mat:
-#             num[i] += j[i]
-#         num[i] = num[i] / n
-#     return num
- 
- 
-# # 获得每个字段的标准差
-# def GetVar(average, mat):
-#     ListMat = []
-#     for i in mat:
-#         ListMat.append(list(map(lambda x: x[0] - x[1], zip(average, i))))
- 
-#     n = len(ListMat)
-#     m = width(ListMat)
-#     num = [0] * m
-#     for j in range(0, m):
-#         for i in ListMat:
-#             num[j] += i[j] * i[j]
-#         num[j] /= n
-#     return num
- 
-# # 获得每个字段的标准差
-# def GetStandardDeviation(mat):
-#     return list(map(lambda x:x**0.5,mat))
-# # 对数据集去噪声
-# def DenoisMat(mat):
-#     average = GetAverage(mat)
-#     variance = GetVar(average, mat)
-#     standardDeviation=GetStandardDeviation(variance)
-#     section = list(map(lambda x: x[0] + 3*x[1], zip(average, standardDeviation)))
-#     n = len(mat)
-#     m = width(mat)
-#     num = [0] * m
-#     denoisMat = []
-#     noDenoisMat=[]
-#     for i in mat:
-#         for j in range(0, m):
-#             if i[j] > section[j]:
-#                 denoisMat.append(i)
-#                 break
-#             if j==(m-1):
-#                 noDenoisMat.append(i)
-#     print("去除完噪声的数据：")
-#     print(noDenoisMat)
-#     print("噪声数据：")
-#     return denoisMat
+    @staticmethod
+    #改进的插值法降噪
+    def Adv_Spline(x_data,y_data,s):
+        #非均匀插值
+        xint = np.diff(x_data)
+        dx = np.append(xint,xint[-1]*2-xint[-2])
+        d1 = x_data - dx*0.5
+        #d2 = x_data + dx*0.33
+        xint = np.append(x_data,d1)
+        #过滤重复的点
+        xint = np.unique(xint)
+        #排序
+        xint.sort()
+        #插值函数
+        f1 = interpolate.UnivariateSpline(x_data,y_data, k=3, s=s)
+        #f2 = interpolate.UnivariateSpline(x_data,y_data, k=3, s=0)
+        #创建插值后的数据点
+        yint1 = f1(xint)
+        #yint2 = f2(xint)
+        #求微分
+        dx = np.diff(xint)
+        dy1 = np.diff(yint1)
+        diff = np.diff(dx/dy1)
+        #dx2 = 
+        #筛选满足条件的数据点
+        idx = np.where(np.absolute(diff) < 1E5)
+        x_int = xint[idx]
+        y_int = yint1[idx]
+        start = 0
+        end = y_int.size
+        for i in range(x_int.size):
+            #print(x_int[i],x_data[0])
+            if x_int[i] < x_data[0]:
+                start = i
+            if x_int[i] > x_data[-1]:
+                end = i
+                break
+        return (x_int[start:end],y_int[start:end])
