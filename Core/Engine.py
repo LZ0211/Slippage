@@ -189,9 +189,11 @@ class Engine:
         fittor.neg_init_guess(m_neg,s_neg)
         if self.fit_method == 'VQ_fit_leastsq':
             param = fittor.VQ_fit_leastsq().x
+        elif self.fit_method == 'QV_fit_leastsq':
+            param = fittor.QV_fit_leastsq().x
         elif self.fit_method == 'dVdQ_fit_leastsq':
             param = fittor.dVdQ_fit_leastsq().x
-        elif self.fit_method == 'fit_leastsq':
-            param = fittor.fit_leastsq().x
+        elif self.fit_method == 'dQdV_fit_leastsq':
+            param = fittor.dQdV_fit_leastsq().x
         return param
 
