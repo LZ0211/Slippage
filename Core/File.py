@@ -5,6 +5,9 @@ import os,re,xlrd,xlwt,codecs,chardet
 class File:
     def __init__(self,filename=None):
         if not filename == None:
+            found = re.match(r'^"(.*)"$',filename)
+            if found:
+                filename = found[1]
             (filepath, tempfilename) = os.path.split(filename)
             (filename, filetype) = os.path.splitext(tempfilename)
             self.filepath = filepath

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 import numpy as np
+import math
 from scipy import interpolate
 
 class DataSet:
@@ -32,11 +33,12 @@ class DataSet:
     def skip_data(self,skip=None):
         if skip == None or skip == 1:
             return self
-        self.x_data = self.x_data[::skip]
-        self.y_data = self.y_data[::skip]
+        size = self.size - self.size % skip
+        self.x_data = self.x_data[0:size:skip]
+        self.size = self.x_data.size
+        self.y_data = np.mean(self.y_data[0:size].reshape(self.size,skip),axis=1)
         self.x_min = np.min(self.x_data)
         self.x_max = np.max(self.x_data)
-        self.size = self.x_data.size
 
     def invert(self):
         return DataSet(self.y_data,self.x_data)
@@ -57,4 +59,4 @@ class DataSet:
 
     def modify(self,p,x):
         (w1,s1)=p
-        return interpolate.UnivariateSpline(self.x_data*w1-s1,self.y_data, k=3, s=0)(x)
+        return (x,interpolate.UnivariateSpline(self.x_data*w1-s1,self.y_data, k=3, s=0)(x))

@@ -9,6 +9,9 @@ from .Fitting import Fitting
 class Engine:
     def __init__(self):
         #缓存数据
+        self.pos_data = None
+        self.neg_data = None
+        self.full_data = None
         self.cache = {}
         self.skip = 1
         self.smooth_options = {
@@ -16,9 +19,9 @@ class Engine:
             "Spline": lambda x,y,v:Smooth.Spline(x,y,v),
             "Adv_Spline": lambda x,y,v:Smooth.Adv_Spline(x,y,v),
             "Convolve": lambda x,y,v:Smooth.Convolve(x,y,5),
-            "Savitzky_Golay": lambda x,y,v:Smooth.Savitzky_Golay(x,y,7,3)
+            "Savitzky_Golay": lambda x,y,v:Smooth.Savitzky_Golay(x,y,11,3)
         }
-        self.noise_factor = [2E-4,2E-5,2E-4]
+        self.noise_factor = [2E-3,2E-5,2E-4]
         #默认插值平滑算法
         self.smooth = lambda x,y,v:Smooth.Adv_Spline(x,y,v)
         self.fit_method = 'VQ_fit_leastsq'
@@ -51,6 +54,18 @@ class Engine:
         elif algo == 'Savitzky_Golay':
             self.smooth = lambda *x:Smooth.Savitzky_Golay(*func(*x),11,3)
             self.cache = {}
+    
+    def set_pos_noise_factor(self,value):
+        self.noise_factor[0] = value
+        self.cache = {}
+
+    def set_neg_noise_factor(self,value):
+        self.noise_factor[1] = value
+        self.cache = {}
+
+    def set_full_noise_factor(self,value):
+        self.noise_factor[2] = value
+        self.cache = {}
     
     def dQdV(self,data,name):
         return self.get_cache(name,lambda : data.diff_invert(self.skip))
@@ -97,6 +112,11 @@ class Engine:
         self.ref_full_data = self.full_data
         self.cache = {}
 
+    #自动初猜
+    def auto_init_guess(self):
+        self.pos_weight = self.full_data.x_data[-1] / self.pos_data.x_data[-1]
+        self.neg_weight = self.full_data.x_data[-1] / self.neg_data.x_data[-1]
+
     #读取正负极质量
     def read_pos_weight(self,value):
         self.pos_weight = value
@@ -106,13 +126,13 @@ class Engine:
 
     #平滑原始数据
     def smooth_pos_data(self):
-        return self.get_cache('smooth_pos_data',lambda : self.smooth(*self.pos_data(),self.noise_factor[0]))
+        return self.get_cache('smooth_pos_data',lambda : self.smooth(*self.ref_pos_data(),self.noise_factor[0]))
 
     def smooth_neg_data(self):
-        return self.get_cache('smooth_neg_data',lambda : self.smooth(*self.neg_data(),self.noise_factor[1]))
+        return self.get_cache('smooth_neg_data',lambda : self.smooth(*self.ref_neg_data(),self.noise_factor[1]))
 
     def smooth_full_data(self):
-        return self.get_cache('smooth_full_data',lambda : self.smooth(*self.full_data(),self.noise_factor[2]))
+        return self.get_cache('smooth_full_data',lambda : self.smooth(*self.ref_full_data(),self.noise_factor[2]))
     
     #直接微分求dVdQ
     def org_pos_dVdQ(self):
@@ -183,7 +203,11 @@ class Engine:
         idx = np.where((x_data > head) & (x_data < tail))
         self.ref_full_data = DataSet(x_data[idx],y_data[idx])
 
-    def fit_data(self,m_pos,s_pos,m_neg,s_neg):
+    def fit_data(self,m_pos=1,s_pos=0,m_neg=1,s_neg=0):
+        if m_pos == None:
+            m_pos = self.pos_weight
+        if m_neg == None:
+            m_neg = self.neg_weight
         fittor = Fitting(self.ref_pos_data,self.ref_neg_data,self.ref_full_data)
         fittor.pos_init_guess(m_pos,s_pos)
         fittor.neg_init_guess(m_neg,s_neg)

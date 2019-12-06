@@ -50,31 +50,31 @@ class Fitting:
     def VQ_fit_leastsq(self):
         def cal_err(p,x,y):
             (w1,s1,w2,s2)=p
-            pos = interpolate.UnivariateSpline(self.pos[0]*w1-s1,self.pos[1], k=3, s=0)(x)
-            neg = interpolate.UnivariateSpline(self.neg[0]*w2-s2,self.neg[1], k=3, s=0)(x)
+            pos = interpolate.UnivariateSpline(self.pos[0]*w1-s1,self.pos[1], k=2, s=0)(x)
+            neg = interpolate.UnivariateSpline(self.neg[0]*w2-s2,self.neg[1], k=2, s=0)(x)
             return pos - neg - y
-        a = optimize.least_squares(cal_err, self.params, args=self.full,verbose=1,bounds=(0, 50))
+        a = optimize.least_squares(cal_err, self.params, args=self.full,verbose=1,bounds=(0, 1000))
         return a
 
     def QV_fit_leastsq(self):
         data = DataSet(self.full[1],self.full[0]).data()
         def cal_err(p,x,y):
             (w1,s1,w2,s2)=p
-            pos = interpolate.UnivariateSpline(self.pos[0]*w1-s1,self.pos[1], k=3, s=0)(x)
-            neg = interpolate.UnivariateSpline(self.neg[0]*w2-s2,self.neg[1], k=3, s=0)(x)
+            pos = interpolate.UnivariateSpline(self.pos[0]*w1-s1,self.pos[1], k=2, s=0)(x)
+            neg = interpolate.UnivariateSpline(self.neg[0]*w2-s2,self.neg[1], k=2, s=0)(x)
             ful = DataSet(pos-neg,x).data()
             return interpolate.UnivariateSpline(*ful, k=3, s=0)(data[0]) - data[1]
-        a = optimize.least_squares(cal_err, self.params, args=self.full,verbose=1,bounds=(0, 50))
+        a = optimize.least_squares(cal_err, self.params, args=self.full,verbose=1,bounds=(0, 1000))
         return a
 
     def dVdQ_fit_leastsq(self):
         diff_y = np.diff(self.full[1])
         def cal_err(p,x,y):
             (w1,s1,w2,s2)=p
-            pos = interpolate.UnivariateSpline(self.pos[0]*w1-s1,self.pos[1], k=3, s=0)(x)
-            neg = interpolate.UnivariateSpline(self.neg[0]*w2-s2,self.neg[1], k=3, s=0)(x)
+            pos = interpolate.UnivariateSpline(self.pos[0]*w1-s1,self.pos[1], k=2, s=0)(x)
+            neg = interpolate.UnivariateSpline(self.neg[0]*w2-s2,self.neg[1], k=2, s=0)(x)
             return np.diff(pos-neg) - diff_y
-        a = optimize.least_squares(cal_err, self.params, args=self.full,verbose=1,bounds=(0, 50))
+        a = optimize.least_squares(cal_err, self.params, args=self.full,verbose=1,bounds=(0, 1000))
         return a
 
     def dQdV_fit_leastsq(self):
@@ -82,22 +82,22 @@ class Fitting:
         diff_x = np.diff(data[0])
         def cal_err(p,x,y):
             (w1,s1,w2,s2)=p
-            pos = interpolate.UnivariateSpline(self.pos[0]*w1-s1,self.pos[1], k=3, s=0)(x)
-            neg = interpolate.UnivariateSpline(self.neg[0]*w2-s2,self.neg[1], k=3, s=0)(x)
+            pos = interpolate.UnivariateSpline(self.pos[0]*w1-s1,self.pos[1], k=2, s=0)(x)
+            neg = interpolate.UnivariateSpline(self.neg[0]*w2-s2,self.neg[1], k=2, s=0)(x)
             ful = DataSet(pos-neg,x).data()
             ful = interpolate.UnivariateSpline(*ful, k=3, s=0)(data[0])
             return np.diff(ful) - diff_x
-        a = optimize.least_squares(cal_err, self.params, args=self.full,verbose=1,bounds=(0, 50))
+        a = optimize.least_squares(cal_err, self.params, args=self.full,verbose=1,bounds=(0, 1000))
         return a
 
     def fit_leastsq(self):
         diff_y = np.diff(self.full[1]) * 50
         def cal_err(p,x,y):
             (w1,s1,w2,s2)=p
-            pos = interpolate.UnivariateSpline(self.pos[0]*w1-s1,self.pos[1], k=3, s=0)(x)
-            neg = interpolate.UnivariateSpline(self.neg[0]*w2-s2,self.neg[1], k=3, s=0)(x)
+            pos = interpolate.UnivariateSpline(self.pos[0]*w1-s1,self.pos[1], k=2, s=0)(x)
+            neg = interpolate.UnivariateSpline(self.neg[0]*w2-s2,self.neg[1], k=2, s=0)(x)
             return np.diff(pos)*50 - np.diff(neg)*50 - diff_y + pos[1:] - neg[1:] - y[1:]
-        a = optimize.least_squares(cal_err, self.params, args=self.full,verbose=1,bounds=(0, 50))
+        a = optimize.least_squares(cal_err, self.params, args=self.full,verbose=1,bounds=(0, 1000))
         return a
 
 

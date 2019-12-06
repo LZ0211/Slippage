@@ -13,20 +13,28 @@ class Smooth:
     @staticmethod
     #Savitzky_Golay滤波器
     def Savitzky_Golay(x_data,y_data,window,order):
-        (xint,yint) = Smooth.Spline(x_data,y_data,s=1E-6)
+        # f = interpolate.UnivariateSpline(x_data,y_data, k=2, s=0)
+        # xint = np.linspace(x_data[0],x_data[-1],x_data.size*5)
+        # yint = f(xint)
+        xint = x_data
+        yint = y_data
         return (xint,signal.savgol_filter(yint,window,order))
 
     @staticmethod
     #滑动平均滤波
     def Convolve(x_data,y_data,w):
-        (xint,yint) = Smooth.Spline(x_data,y_data,s=1E-6)
+        # f = interpolate.UnivariateSpline(x_data,y_data, k=2, s=0)
+        # xint = np.linspace(x_data[0],x_data[-1],x_data.size*5)
+        # yint = f(xint)
+        xint = x_data
+        yint = y_data
         wi=np.ones(w)/float(w)
         return (xint,np.convolve(yint,wi,'same'))
 
     @staticmethod
     #插值法降噪
     def Spline(x_data,y_data,s):
-        f = interpolate.UnivariateSpline(x_data,y_data, k=3, s=s)
+        f = interpolate.UnivariateSpline(x_data,y_data, k=2, s=s)
         yint = f(x_data)
         return (x_data,yint)
 
@@ -44,7 +52,7 @@ class Smooth:
         #排序
         xint.sort()
         #插值函数
-        f1 = interpolate.UnivariateSpline(x_data,y_data, k=3, s=s)
+        f1 = interpolate.UnivariateSpline(x_data,y_data, k=2, s=s)
         #f2 = interpolate.UnivariateSpline(x_data,y_data, k=3, s=0)
         #创建插值后的数据点
         yint1 = f1(xint)
