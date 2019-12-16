@@ -1,0 +1,1729 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>797</width>
+    <height>603</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>ATL-Electrical Chemistry Analysor</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>resource/chemical.ico</normaloff>resource/chemical.ico</iconset>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <widget class="QGraphicsView" name="graphicsView"/>
+    </item>
+    <item row="0" column="1" rowspan="3">
+     <widget class="QGroupBox" name="Process_Box">
+      <property name="minimumSize">
+       <size>
+        <width>260</width>
+        <height>540</height>
+       </size>
+      </property>
+      <property name="title">
+       <string>Data Processing</string>
+      </property>
+      <widget class="QComboBox" name="Data_List">
+       <property name="geometry">
+        <rect>
+         <x>80</x>
+         <y>17</y>
+         <width>125</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="editable">
+        <bool>false</bool>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label">
+       <property name="geometry">
+        <rect>
+         <x>11</x>
+         <y>21</y>
+         <width>54</width>
+         <height>12</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Data List</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="Methods_List">
+       <property name="geometry">
+        <rect>
+         <x>110</x>
+         <y>166</y>
+         <width>140</width>
+         <height>22</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_2">
+       <property name="geometry">
+        <rect>
+         <x>11</x>
+         <y>169</y>
+         <width>91</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Smooth Methods</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_3">
+       <property name="geometry">
+        <rect>
+         <x>11</x>
+         <y>50</y>
+         <width>54</width>
+         <height>12</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Skip Data</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="Skip_List">
+       <property name="geometry">
+        <rect>
+         <x>80</x>
+         <y>46</y>
+         <width>91</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+       <item>
+        <property name="text">
+         <string>1</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>2</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>5</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>10</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>20</string>
+        </property>
+       </item>
+      </widget>
+      <widget class="QPushButton" name="Skip_Button">
+       <property name="geometry">
+        <rect>
+         <x>176</x>
+         <y>46</y>
+         <width>75</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Skip</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_4">
+       <property name="geometry">
+        <rect>
+         <x>11</x>
+         <y>79</y>
+         <width>54</width>
+         <height>12</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Diff Data</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="Diff_List">
+       <property name="geometry">
+        <rect>
+         <x>80</x>
+         <y>75</y>
+         <width>91</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+       <item>
+        <property name="text">
+         <string>1</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>2</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>5</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>10</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>20</string>
+        </property>
+       </item>
+      </widget>
+      <widget class="QPushButton" name="Diff_Button">
+       <property name="geometry">
+        <rect>
+         <x>176</x>
+         <y>75</y>
+         <width>75</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Diff</string>
+       </property>
+      </widget>
+      <widget class="Line" name="line">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>151</y>
+         <width>241</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_5">
+       <property name="geometry">
+        <rect>
+         <x>11</x>
+         <y>135</y>
+         <width>54</width>
+         <height>12</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>New Name</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="New_Name">
+       <property name="geometry">
+        <rect>
+         <x>64</x>
+         <y>132</y>
+         <width>131</width>
+         <height>20</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="Alias_Button">
+       <property name="geometry">
+        <rect>
+         <x>199</x>
+         <y>130</y>
+         <width>51</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Alias</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="Param_Name">
+       <property name="geometry">
+        <rect>
+         <x>11</x>
+         <y>198</y>
+         <width>61</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Parameter</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="Smooth_Param">
+       <property name="geometry">
+        <rect>
+         <x>70</x>
+         <y>196</y>
+         <width>111</width>
+         <height>20</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="Smooth_Button">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>194</y>
+         <width>61</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Smooth</string>
+       </property>
+      </widget>
+      <widget class="Line" name="line_2">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>217</y>
+         <width>241</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+      <widget class="QLabel" name="Param_Name_2">
+       <property name="geometry">
+        <rect>
+         <x>11</x>
+         <y>228</y>
+         <width>61</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Date Type</string>
+       </property>
+      </widget>
+      <widget class="QRadioButton" name="VQ_Radio">
+       <property name="geometry">
+        <rect>
+         <x>90</x>
+         <y>229</y>
+         <width>61</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>V-Q</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+       <property name="autoExclusive">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QRadioButton" name="dQdV_Radio">
+       <property name="geometry">
+        <rect>
+         <x>180</x>
+         <y>229</y>
+         <width>61</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>dQdV-Q</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="Positive_List">
+       <property name="geometry">
+        <rect>
+         <x>69</x>
+         <y>252</y>
+         <width>181</width>
+         <height>22</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="Negative_List">
+       <property name="geometry">
+        <rect>
+         <x>69</x>
+         <y>281</y>
+         <width>181</width>
+         <height>22</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="Full_List">
+       <property name="geometry">
+        <rect>
+         <x>69</x>
+         <y>310</y>
+         <width>181</width>
+         <height>22</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="Param_Name_5">
+       <property name="geometry">
+        <rect>
+         <x>11</x>
+         <y>253</y>
+         <width>81</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Positive</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="Param_Name_6">
+       <property name="geometry">
+        <rect>
+         <x>11</x>
+         <y>283</y>
+         <width>81</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Negative</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="Param_Name_7">
+       <property name="geometry">
+        <rect>
+         <x>11</x>
+         <y>313</y>
+         <width>41</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Full</string>
+       </property>
+      </widget>
+      <widget class="QGroupBox" name="Positive_Box">
+       <property name="geometry">
+        <rect>
+         <x>5</x>
+         <y>334</y>
+         <width>250</width>
+         <height>72</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Positive</string>
+       </property>
+       <widget class="QSlider" name="Pos_Scale_Slider">
+        <property name="geometry">
+         <rect>
+          <x>45</x>
+          <y>18</y>
+          <width>131</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="maximum">
+         <number>5</number>
+        </property>
+        <property name="pageStep">
+         <number>1</number>
+        </property>
+        <property name="value">
+         <number>0</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+       <widget class="QLabel" name="Param_Name_3">
+        <property name="geometry">
+         <rect>
+          <x>8</x>
+          <y>18</y>
+          <width>41</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Scale</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="Param_Name_4">
+        <property name="geometry">
+         <rect>
+          <x>8</x>
+          <y>44</y>
+          <width>51</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Shift</string>
+        </property>
+       </widget>
+       <widget class="QSlider" name="Pos_Shift_Slider">
+        <property name="geometry">
+         <rect>
+          <x>45</x>
+          <y>44</y>
+          <width>131</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="maximum">
+         <number>5</number>
+        </property>
+        <property name="pageStep">
+         <number>1</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+       <widget class="QDoubleSpinBox" name="Pos_Scale_SpinBox">
+        <property name="geometry">
+         <rect>
+          <x>180</x>
+          <y>15</y>
+          <width>61</width>
+          <height>22</height>
+         </rect>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+        <property name="decimals">
+         <number>5</number>
+        </property>
+        <property name="singleStep">
+         <double>1.000000000000000</double>
+        </property>
+        <property name="value">
+         <double>1.000000000000000</double>
+        </property>
+       </widget>
+       <widget class="QDoubleSpinBox" name="Pos_Shift_SpinBox">
+        <property name="geometry">
+         <rect>
+          <x>180</x>
+          <y>42</y>
+          <width>61</width>
+          <height>22</height>
+         </rect>
+        </property>
+        <property name="wrapping">
+         <bool>false</bool>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+        <property name="decimals">
+         <number>5</number>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QGroupBox" name="Negative_Box">
+       <property name="geometry">
+        <rect>
+         <x>5</x>
+         <y>406</y>
+         <width>250</width>
+         <height>72</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Negative</string>
+       </property>
+       <widget class="QSlider" name="Neg_Scale_Slider">
+        <property name="geometry">
+         <rect>
+          <x>45</x>
+          <y>18</y>
+          <width>131</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="maximum">
+         <number>5</number>
+        </property>
+        <property name="pageStep">
+         <number>1</number>
+        </property>
+        <property name="value">
+         <number>0</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+       <widget class="QLabel" name="Param_Name_8">
+        <property name="geometry">
+         <rect>
+          <x>8</x>
+          <y>18</y>
+          <width>41</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Scale</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="Param_Name_9">
+        <property name="geometry">
+         <rect>
+          <x>8</x>
+          <y>45</y>
+          <width>51</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Shift</string>
+        </property>
+       </widget>
+       <widget class="QSlider" name="Neg_Shift_Slider">
+        <property name="geometry">
+         <rect>
+          <x>45</x>
+          <y>45</y>
+          <width>131</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="maximum">
+         <number>5</number>
+        </property>
+        <property name="pageStep">
+         <number>1</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+       <widget class="QDoubleSpinBox" name="Neg_Scale_SpinBox">
+        <property name="geometry">
+         <rect>
+          <x>180</x>
+          <y>15</y>
+          <width>61</width>
+          <height>22</height>
+         </rect>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+        <property name="decimals">
+         <number>5</number>
+        </property>
+        <property name="value">
+         <double>1.000000000000000</double>
+        </property>
+       </widget>
+       <widget class="QDoubleSpinBox" name="Neg_Shift_SpinBox">
+        <property name="geometry">
+         <rect>
+          <x>180</x>
+          <y>43</y>
+          <width>61</width>
+          <height>22</height>
+         </rect>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+        <property name="decimals">
+         <number>5</number>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QPushButton" name="Fitting_Button">
+       <property name="geometry">
+        <rect>
+         <x>175</x>
+         <y>510</y>
+         <width>75</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Fitting</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_6">
+       <property name="geometry">
+        <rect>
+         <x>11</x>
+         <y>105</y>
+         <width>91</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Cut Data From</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="Cut_From">
+       <property name="geometry">
+        <rect>
+         <x>94</x>
+         <y>104</y>
+         <width>41</width>
+         <height>20</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="Cut_To">
+       <property name="geometry">
+        <rect>
+         <x>159</x>
+         <y>104</y>
+         <width>41</width>
+         <height>20</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_7">
+       <property name="geometry">
+        <rect>
+         <x>140</x>
+         <y>106</y>
+         <width>21</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>To</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="Cut_Button">
+       <property name="geometry">
+        <rect>
+         <x>209</x>
+         <y>102</y>
+         <width>41</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Cut</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="Pos_Scale_Param">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>485</y>
+         <width>57</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="placeholderText">
+        <string>1.00000</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="Pos_Shift_Param">
+       <property name="geometry">
+        <rect>
+         <x>71</x>
+         <y>485</y>
+         <width>57</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="placeholderText">
+        <string>0.00000</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="Neg_Scale_Param">
+       <property name="geometry">
+        <rect>
+         <x>132</x>
+         <y>485</y>
+         <width>57</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="placeholderText">
+        <string>1.00000</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="Neg_Shift_Param">
+       <property name="geometry">
+        <rect>
+         <x>193</x>
+         <y>485</y>
+         <width>57</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="placeholderText">
+        <string>0.00000</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_26">
+       <property name="geometry">
+        <rect>
+         <x>12</x>
+         <y>513</y>
+         <width>41</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>RMSD</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="RMSD">
+       <property name="geometry">
+        <rect>
+         <x>45</x>
+         <y>511</y>
+         <width>113</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="View_Button">
+       <property name="geometry">
+        <rect>
+         <x>210</x>
+         <y>16</y>
+         <width>41</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>View</string>
+       </property>
+      </widget>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QGroupBox" name="Curve_Box">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>125</height>
+       </size>
+      </property>
+      <property name="title">
+       <string>Curve</string>
+      </property>
+      <widget class="QCheckBox" name="Pos_checkBox">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>19</y>
+         <width>101</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Positive Data</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="Neg_checkBox">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>46</y>
+         <width>101</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Negative Data</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="Full_checkBox">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>73</y>
+         <width>101</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Full Data</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_8">
+       <property name="geometry">
+        <rect>
+         <x>128</x>
+         <y>20</y>
+         <width>41</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Type</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_9">
+       <property name="geometry">
+        <rect>
+         <x>128</x>
+         <y>46</y>
+         <width>41</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Type</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_10">
+       <property name="geometry">
+        <rect>
+         <x>128</x>
+         <y>72</y>
+         <width>41</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Type</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="Pos_Type">
+       <property name="geometry">
+        <rect>
+         <x>158</x>
+         <y>17</y>
+         <width>91</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <item>
+        <property name="text">
+         <string>Symbol+Line</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Symbol</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Line</string>
+        </property>
+       </item>
+      </widget>
+      <widget class="QComboBox" name="Neg_Type">
+       <property name="geometry">
+        <rect>
+         <x>158</x>
+         <y>44</y>
+         <width>91</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <item>
+        <property name="text">
+         <string>Symbol+Line</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Symbol</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Line</string>
+        </property>
+       </item>
+      </widget>
+      <widget class="QComboBox" name="Full_Type">
+       <property name="geometry">
+        <rect>
+         <x>158</x>
+         <y>71</y>
+         <width>91</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <item>
+        <property name="text">
+         <string>Symbol+Line</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Symbol</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Line</string>
+        </property>
+       </item>
+      </widget>
+      <widget class="QLabel" name="label_17">
+       <property name="geometry">
+        <rect>
+         <x>267</x>
+         <y>46</y>
+         <width>41</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Color</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="Full_Color">
+       <property name="geometry">
+        <rect>
+         <x>302</x>
+         <y>70</y>
+         <width>61</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <item>
+        <property name="text">
+         <string>Red</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Blue</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Black</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Green</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Orange</string>
+        </property>
+       </item>
+      </widget>
+      <widget class="QComboBox" name="Neg_Color">
+       <property name="geometry">
+        <rect>
+         <x>302</x>
+         <y>43</y>
+         <width>61</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <item>
+        <property name="text">
+         <string>Red</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Blue</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Black</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Green</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Orange</string>
+        </property>
+       </item>
+      </widget>
+      <widget class="QComboBox" name="Pos_Color">
+       <property name="geometry">
+        <rect>
+         <x>302</x>
+         <y>16</y>
+         <width>61</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <item>
+        <property name="text">
+         <string>Red</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Blue</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Black</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Green</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Orange</string>
+        </property>
+       </item>
+      </widget>
+      <widget class="QLabel" name="label_18">
+       <property name="geometry">
+        <rect>
+         <x>267</x>
+         <y>20</y>
+         <width>41</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Color</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_19">
+       <property name="geometry">
+        <rect>
+         <x>267</x>
+         <y>72</y>
+         <width>41</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Color</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="Fit_checkBox">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>100</y>
+         <width>101</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Fitted Data</string>
+       </property>
+      </widget>
+      <widget class="Line" name="line_4">
+       <property name="geometry">
+        <rect>
+         <x>250</x>
+         <y>16</y>
+         <width>20</width>
+         <height>100</height>
+        </rect>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="Fit_Type">
+       <property name="geometry">
+        <rect>
+         <x>159</x>
+         <y>98</y>
+         <width>91</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <item>
+        <property name="text">
+         <string>Symbol+Line</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Symbol</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Line</string>
+        </property>
+       </item>
+      </widget>
+      <widget class="QLabel" name="label_20">
+       <property name="geometry">
+        <rect>
+         <x>129</x>
+         <y>99</y>
+         <width>41</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Type</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="Fit_Color">
+       <property name="geometry">
+        <rect>
+         <x>302</x>
+         <y>96</y>
+         <width>61</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <item>
+        <property name="text">
+         <string>Red</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Blue</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Black</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Green</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Orange</string>
+        </property>
+       </item>
+      </widget>
+      <widget class="QLabel" name="label_21">
+       <property name="geometry">
+        <rect>
+         <x>267</x>
+         <y>98</y>
+         <width>41</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Color</string>
+       </property>
+      </widget>
+      <widget class="Line" name="line_9">
+       <property name="geometry">
+        <rect>
+         <x>111</x>
+         <y>18</y>
+         <width>20</width>
+         <height>100</height>
+        </rect>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+      </widget>
+      <widget class="Line" name="line_10">
+       <property name="geometry">
+        <rect>
+         <x>362</x>
+         <y>19</y>
+         <width>20</width>
+         <height>100</height>
+        </rect>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_22">
+       <property name="geometry">
+        <rect>
+         <x>378</x>
+         <y>18</y>
+         <width>41</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Symbol</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="Pos_Symbol">
+       <property name="geometry">
+        <rect>
+         <x>422</x>
+         <y>14</y>
+         <width>71</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <item>
+        <property name="text">
+         <string>point</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>circle</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>triangle_down</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>triangle_up</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>triangle_left</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>triangle_right</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>square</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>pentagon</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>star</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>hexagon</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>diamond</string>
+        </property>
+       </item>
+      </widget>
+      <widget class="QLabel" name="label_23">
+       <property name="geometry">
+        <rect>
+         <x>378</x>
+         <y>96</y>
+         <width>41</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Symbol</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_24">
+       <property name="geometry">
+        <rect>
+         <x>378</x>
+         <y>44</y>
+         <width>41</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Symbol</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_25">
+       <property name="geometry">
+        <rect>
+         <x>378</x>
+         <y>70</y>
+         <width>41</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Symbol</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="Neg_Symbol">
+       <property name="geometry">
+        <rect>
+         <x>422</x>
+         <y>41</y>
+         <width>71</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <item>
+        <property name="text">
+         <string>point</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>circle</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>triangle_down</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>triangle_up</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>triangle_left</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>triangle_right</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>square</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>pentagon</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>star</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>hexagon</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>diamond</string>
+        </property>
+       </item>
+      </widget>
+      <widget class="QComboBox" name="Full_Symbol">
+       <property name="geometry">
+        <rect>
+         <x>422</x>
+         <y>67</y>
+         <width>71</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <item>
+        <property name="text">
+         <string>point</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>circle</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>triangle_down</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>triangle_up</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>triangle_left</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>triangle_right</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>square</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>pentagon</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>star</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>hexagon</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>diamond</string>
+        </property>
+       </item>
+      </widget>
+      <widget class="QComboBox" name="Fit_Symbol">
+       <property name="geometry">
+        <rect>
+         <x>422</x>
+         <y>93</y>
+         <width>71</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <item>
+        <property name="text">
+         <string>point</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>circle</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>triangle_down</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>triangle_up</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>triangle_left</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>triangle_right</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>square</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>pentagon</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>star</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>hexagon</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>diamond</string>
+        </property>
+       </item>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>797</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <widget class="QMenu" name="menu_Open">
+     <property name="title">
+      <string>&amp;Open</string>
+     </property>
+     <addaction name="action_Positive_Reference"/>
+     <addaction name="action_Negative_Reference"/>
+     <addaction name="action_Measured_Data"/>
+    </widget>
+    <widget class="QMenu" name="menu_Recent_Files">
+     <property name="title">
+      <string>&amp;Recent Files</string>
+     </property>
+    </widget>
+    <addaction name="menu_Open"/>
+    <addaction name="action_Save"/>
+    <addaction name="action_Exit"/>
+    <addaction name="action_Preferences"/>
+    <addaction name="separator"/>
+    <addaction name="menu_Recent_Files"/>
+   </widget>
+   <widget class="QMenu" name="menu_Edit">
+    <property name="title">
+     <string>&amp;Edit</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menu_Tool">
+    <property name="title">
+     <string>&amp;Tool</string>
+    </property>
+    <addaction name="action_Excel2TXT"/>
+    <addaction name="action_Excel2CSV"/>
+    <addaction name="action_CSV2TXT"/>
+    <addaction name="action_CSV2Excel"/>
+    <addaction name="action_TXT2CSV"/>
+    <addaction name="action_TXT2Excel"/>
+   </widget>
+   <widget class="QMenu" name="menu_Help">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menu_Edit"/>
+   <addaction name="menu_Tool"/>
+   <addaction name="menu_Help"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="action_Save">
+   <property name="text">
+    <string>&amp;Save</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="action_Preferences">
+   <property name="text">
+    <string>&amp;Preferences</string>
+   </property>
+  </action>
+  <action name="action_Exit">
+   <property name="text">
+    <string>&amp;Exit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="action_Positive_Reference">
+   <property name="text">
+    <string>Positive Reference</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+P</string>
+   </property>
+  </action>
+  <action name="action_Negative_Reference">
+   <property name="text">
+    <string>Negative Reference</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+N</string>
+   </property>
+  </action>
+  <action name="action_Measured_Data">
+   <property name="text">
+    <string>Measured Data</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+F</string>
+   </property>
+  </action>
+  <action name="action_Excel2TXT">
+   <property name="text">
+    <string>Excel2TXT</string>
+   </property>
+  </action>
+  <action name="action_Excel2CSV">
+   <property name="text">
+    <string>Excel2CSV</string>
+   </property>
+  </action>
+  <action name="action_CSV2TXT">
+   <property name="text">
+    <string>CSV2TXT</string>
+   </property>
+  </action>
+  <action name="action_CSV2Excel">
+   <property name="text">
+    <string>CSV2Excel</string>
+   </property>
+  </action>
+  <action name="action_TXT2CSV">
+   <property name="text">
+    <string>TXT2CSV</string>
+   </property>
+  </action>
+  <action name="action_TXT2Excel">
+   <property name="text">
+    <string>TXT2Excel</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

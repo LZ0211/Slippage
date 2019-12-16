@@ -62,7 +62,7 @@ class File:
         encoding = self.detectCode(filename)
         lines = open(filename,encoding=encoding).read().strip().splitlines()
         lines = filter(lambda line: not re.match(r'[^\s\d\.\+\-]',line),lines)
-        points = map(lambda line:list(map(lambda x:float(x),filter(lambda x: not x == '',re.split(r'[,\s]+',line.strip())))),lines)
+        points = filter(lambda x:len(x)==2,map(lambda line:list(map(lambda x:float(x),filter(lambda x: not x == '',re.split(r'[,\s]+',line.strip())))),lines))
         return list(points)
 
     def read_xls_file(self,filename):
