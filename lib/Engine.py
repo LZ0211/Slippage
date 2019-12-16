@@ -26,6 +26,9 @@ class Engine:
 
     def set_diff_window(self,value):
         self.diff_window = value
+
+    def set_param(self,value,idx):
+        self.params[idx] = value
         
     def alias(self,name):
         if self.selected in self.datas:

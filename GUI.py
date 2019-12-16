@@ -43,7 +43,6 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
         self.bindSliderAction()
         self.bindSpinBoxAction()
         #参数框
-        self.bindParamInputAction()
         self.bindInputAction()
         #self.core.bind(self.updateList)
 
@@ -68,52 +67,14 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
         self.Neg_Shift_Slider.valueChanged.connect(lambda value:self.Neg_Shift_SpinBox.setSingleStep(0.1**value))
 
     def bindSpinBoxAction(self):
-        self.Pos_Scale_SpinBox.valueChanged.connect(lambda value:self.Pos_Scale_Param.setText('%8.5f' % value))
-        self.Pos_Shift_SpinBox.valueChanged.connect(lambda value:self.Pos_Shift_Param.setText('%8.5f' % value))
-        self.Neg_Scale_SpinBox.valueChanged.connect(lambda value:self.Neg_Scale_Param.setText('%8.5f' % value))
-        self.Neg_Shift_SpinBox.valueChanged.connect(lambda value:self.Neg_Shift_Param.setText('%8.5f' % value))
-
-    def bindParamInputAction(self):
-        def checkValid(param,spinBox):
-            try:
-                value = float(param.text())
-                spinBox.setValue(value)
-                if value < 0:
-                    self.infomation('The parameter cannot be less than zero!')
-                    param.setText('%8.5f' % spinBox.value())
-            except:
-                self.infomation('The parameter must be a number!')
-                param.setText('%8.5f' % spinBox.value())
-        self.Pos_Scale_Param.editingFinished.connect(lambda :checkValid(self.Pos_Scale_Param,self.Pos_Scale_SpinBox))
-        self.Pos_Shift_Param.editingFinished.connect(lambda :checkValid(self.Pos_Shift_Param,self.Pos_Shift_SpinBox))
-        self.Neg_Scale_Param.editingFinished.connect(lambda :checkValid(self.Neg_Scale_Param,self.Neg_Scale_SpinBox))
-        self.Neg_Shift_Param.editingFinished.connect(lambda :checkValid(self.Neg_Shift_Param,self.Neg_Shift_SpinBox))
+        self.Pos_Scale_SpinBox.valueChanged.connect(lambda value:self.core.set_param(value,0))
+        self.Pos_Shift_SpinBox.valueChanged.connect(lambda value:self.core.set_param(value,1))
+        self.Neg_Scale_SpinBox.valueChanged.connect(lambda value:self.core.set_param(value,2))
+        self.Neg_Shift_SpinBox.valueChanged.connect(lambda value:self.core.set_param(value,3))
 
     def bindInputAction(self):
-        def checkIntegerValid(text,input):
-            try:
-                value = int(text)
-                if value < 1:
-                    self.infomation('The data interval muest be larger than 1!')
-                    input.setEditText('1')
-            except:
-                self.infomation('The data interval must be an integer!')
-                input.setEditText('1')
-
-        def checkFloatValid(text,input,val):
-            try:
-                value = float(text)
-            except:
-                self.infomation('The data range must be a number!')
-                input.setText(val)
-
-        self.Skip_List.activated.connect(lambda x:self.core.set_skip_window(int(x)))
-        self.Diff_List.activated.connect(lambda x:self.core.set_diff_window(int(x)))
-
-        self.Skip_List.editTextChanged.connect(lambda text:checkIntegerValid(text,self.Skip_List))
-        self.Diff_List.editTextChanged.connect(lambda text:checkIntegerValid(text,self.Diff_List))
-        self.Cut_From.editingFinished.connect(lambda text:checkFloatValid(text,self.Cut_From,'0'))
-        self.Cut_To.editingFinished.connect(lambda text:checkFloatValid(text,self.Cut_To,'9999'))
+        self.Skip_List.valueChanged.connect(self.core.set_skip_window)
+        self.Diff_List.valueChanged.connect(self.core.set_diff_window)
 
     def infomation(self,text):
         QMessageBox.information(self,"Information",text,QMessageBox.Yes)

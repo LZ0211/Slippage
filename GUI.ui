@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>797</width>
-    <height>603</height>
+    <height>616</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -95,7 +95,7 @@
         <string>Skip Data</string>
        </property>
       </widget>
-      <widget class="QComboBox" name="Skip_List">
+      <widget class="QSpinBox" name="Skip_List">
        <property name="geometry">
         <rect>
          <x>80</x>
@@ -104,34 +104,9 @@
          <height>22</height>
         </rect>
        </property>
-       <property name="editable">
-        <bool>true</bool>
+       <property name="minimum">
+        <number>1</number>
        </property>
-       <item>
-        <property name="text">
-         <string>1</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>2</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>5</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>10</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>20</string>
-        </property>
-       </item>
       </widget>
       <widget class="QPushButton" name="Skip_Button">
        <property name="geometry">
@@ -159,7 +134,7 @@
         <string>Diff Data</string>
        </property>
       </widget>
-      <widget class="QComboBox" name="Diff_List">
+      <widget class="QSpinBox" name="Diff_List">
        <property name="geometry">
         <rect>
          <x>80</x>
@@ -168,34 +143,9 @@
          <height>22</height>
         </rect>
        </property>
-       <property name="editable">
-        <bool>true</bool>
+       <property name="minimum">
+        <number>1</number>
        </property>
-       <item>
-        <property name="text">
-         <string>1</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>2</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>5</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>10</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>20</string>
-        </property>
-       </item>
       </widget>
       <widget class="QPushButton" name="Diff_Button">
        <property name="geometry">
@@ -272,7 +222,7 @@
         <string>Parameter</string>
        </property>
       </widget>
-      <widget class="QLineEdit" name="Smooth_Param">
+      <widget class="QDoubleSpinBox" name="Smooth_Param">
        <property name="geometry">
         <rect>
          <x>70</x>
@@ -280,6 +230,18 @@
          <width>111</width>
          <height>20</height>
         </rect>
+       </property>
+       <property name="buttonSymbols">
+        <enum>QAbstractSpinBox::NoButtons</enum>
+       </property>
+       <property name="decimals">
+        <number>6</number>
+       </property>
+       <property name="singleStep">
+        <double>0.010000000000000</double>
+       </property>
+       <property name="value">
+        <double>0.000000000000000</double>
        </property>
       </widget>
       <widget class="QPushButton" name="Smooth_Button">
@@ -444,7 +406,7 @@
          </rect>
         </property>
         <property name="maximum">
-         <number>5</number>
+         <number>4</number>
         </property>
         <property name="pageStep">
          <number>1</number>
@@ -492,7 +454,7 @@
          </rect>
         </property>
         <property name="maximum">
-         <number>5</number>
+         <number>4</number>
         </property>
         <property name="pageStep">
          <number>1</number>
@@ -510,11 +472,8 @@
           <height>22</height>
          </rect>
         </property>
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
         <property name="decimals">
-         <number>5</number>
+         <number>4</number>
         </property>
         <property name="singleStep">
          <double>1.000000000000000</double>
@@ -535,11 +494,8 @@
         <property name="wrapping">
          <bool>false</bool>
         </property>
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
         <property name="decimals">
-         <number>5</number>
+         <number>4</number>
         </property>
        </widget>
       </widget>
@@ -565,7 +521,7 @@
          </rect>
         </property>
         <property name="maximum">
-         <number>5</number>
+         <number>4</number>
         </property>
         <property name="pageStep">
          <number>1</number>
@@ -613,7 +569,7 @@
          </rect>
         </property>
         <property name="maximum">
-         <number>5</number>
+         <number>4</number>
         </property>
         <property name="pageStep">
          <number>1</number>
@@ -631,11 +587,8 @@
           <height>22</height>
          </rect>
         </property>
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
         <property name="decimals">
-         <number>5</number>
+         <number>4</number>
         </property>
         <property name="value">
          <double>1.000000000000000</double>
@@ -650,11 +603,8 @@
           <height>22</height>
          </rect>
         </property>
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
         <property name="decimals">
-         <number>5</number>
+         <number>4</number>
         </property>
        </widget>
       </widget>
@@ -684,7 +634,7 @@
         <string>Cut Data From</string>
        </property>
       </widget>
-      <widget class="QLineEdit" name="Cut_From">
+      <widget class="QDoubleSpinBox" name="Cut_From">
        <property name="geometry">
         <rect>
          <x>94</x>
@@ -693,8 +643,20 @@
          <height>20</height>
         </rect>
        </property>
+       <property name="buttonSymbols">
+        <enum>QAbstractSpinBox::NoButtons</enum>
+       </property>
+       <property name="decimals">
+        <number>2</number>
+       </property>
+       <property name="singleStep">
+        <double>0.010000000000000</double>
+       </property>
+       <property name="value">
+        <double>0.000000000000000</double>
+       </property>
       </widget>
-      <widget class="QLineEdit" name="Cut_To">
+      <widget class="QDoubleSpinBox" name="Cut_To">
        <property name="geometry">
         <rect>
          <x>159</x>
@@ -702,6 +664,18 @@
          <width>41</width>
          <height>20</height>
         </rect>
+       </property>
+       <property name="buttonSymbols">
+        <enum>QAbstractSpinBox::NoButtons</enum>
+       </property>
+       <property name="decimals">
+        <number>2</number>
+       </property>
+       <property name="singleStep">
+        <double>0.010000000000000</double>
+       </property>
+       <property name="value">
+        <double>0.000000000000000</double>
        </property>
       </widget>
       <widget class="QLabel" name="label_7">
@@ -728,61 +702,6 @@
        </property>
        <property name="text">
         <string>Cut</string>
-       </property>
-      </widget>
-      <widget class="QLineEdit" name="Pos_Scale_Param">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>485</y>
-         <width>57</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="placeholderText">
-        <string>1.00000</string>
-       </property>
-      </widget>
-      <widget class="QLineEdit" name="Pos_Shift_Param">
-       <property name="geometry">
-        <rect>
-         <x>71</x>
-         <y>485</y>
-         <width>57</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="placeholderText">
-        <string>0.00000</string>
-       </property>
-      </widget>
-      <widget class="QLineEdit" name="Neg_Scale_Param">
-       <property name="geometry">
-        <rect>
-         <x>132</x>
-         <y>485</y>
-         <width>57</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="placeholderText">
-        <string>1.00000</string>
-       </property>
-      </widget>
-      <widget class="QLineEdit" name="Neg_Shift_Param">
-       <property name="geometry">
-        <rect>
-         <x>193</x>
-         <y>485</y>
-         <width>57</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="placeholderText">
-        <string>0.00000</string>
        </property>
       </widget>
       <widget class="QLabel" name="label_26">
@@ -1594,7 +1513,7 @@
      <x>0</x>
      <y>0</y>
      <width>797</width>
-     <height>23</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -1659,6 +1578,9 @@
   <action name="action_Preferences">
    <property name="text">
     <string>&amp;Preferences</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
    </property>
   </action>
   <action name="action_Exit">
