@@ -1,8 +1,14 @@
 #!/usr/bin/env python
 # coding=utf-8
-import os,re,xlrd,xlwt,codecs,chardet
+import os,re,xlrd,xlwt,codecs,chardet,tempfile
 
 class File:
+    @staticmethod
+    def temp(data):
+        file = tempfile.mktemp()
+        open(file,'w+').write(data)
+        return file
+
     def __init__(self,filename=None):
         if not filename == None:
             found = re.match(r'^"(.*)"$',filename)

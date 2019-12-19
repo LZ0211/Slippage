@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-import re
+import re,math,os
 import numpy as np
 from scipy import interpolate
 from .DataSet import DataSet
@@ -12,14 +12,23 @@ class Engine:
     def __init__(self):
         self.datas = {}
         self.selected = ''
-        self.for_fitting = []
+        self.for_fitting = ['','','']
         self.params = [1,0,1,0]
+        self.locked = [False,False,False,False]
         self.scale_param = [1,0]
         self.skip_window = 1
         self.diff_window = 1
-        self.cut_range = [0,float("inf")]
-        self.fitting_method = 'dVdQ'
-        self.events = []
+        self.cut_range = [0,100]
+        self.pos_tag = None
+        self.neg_tag = None
+        self.fitting_method = 'VQ'
+        self.events = {
+            'select':[],
+            'change':[],
+            'fitting':[],
+            'cut':[],
+            'smooth':[]
+        }
 
     def set_skip_window(self,value):
         self.skip_window = value
@@ -27,27 +36,58 @@ class Engine:
     def set_diff_window(self,value):
         self.diff_window = value
 
+    def set_cut_from(self,value):
+        self.cut_range[0] = value
+
+    def set_cut_to(self,value):
+        self.cut_range[1] = value
+
     def set_param(self,value,idx):
         self.params[idx] = value
-        
-    def alias(self,name):
-        if self.selected in self.datas:
-            self.datas[name] = self.datas[self.selected]
-            del self.datas[self.selected]
-            self.selected = name
-            self.triggle()
 
-    def triggle(self):
-        for f in self.events:
+    def set_fitting_method(self,method,state):
+        if state == True:
+            self.fitting_method = method
+
+    def lock_param(self,idx):
+        self.locked[idx] = True
+    
+    def unlock_param(self,idx):
+        self.locked[idx] = False
+
+    def triggle(self,event):
+        for f in self.events[event]:
             f()
 
-    def bind(self,f):
-        self.events.append(f)
+    def bind(self,event,f):
+        self.events[event].append(f)
 
     def select(self,key):
         if not key in self.datas:
             return False
         self.selected = key
+        self.triggle('select')
+        return True
+
+    def select_pos(self,key):
+        if not key in self.datas:
+            return False
+        self.for_fitting[0] = key
+        self.init_guess()
+        return True
+
+    def select_neg(self,key):
+        if not key in self.datas:
+            return False
+        self.for_fitting[1] = key
+        self.init_guess()
+        return True
+
+    def select_full(self,key):
+        if not key in self.datas:
+            return False
+        self.for_fitting[2] = key
+        self.init_guess()
         return True
 
     def cut(self,datas):
@@ -72,19 +112,48 @@ class Engine:
         if self.fitting_method == 'dVdQ':
             return datas.modify_x(*self.scale_param).modify_y(1/self.scale_param[0],0)
 
-    def data(self):
+    def data(self,key=None):
         if self.selected in self.datas:
             return self.datas[self.selected]()
+
+    def add_data(self,key,val):
+        idx = 0
+        _key = key
+        while _key in self.datas:
+            idx += 1
+            _key = key + str(idx)
+        self.datas[_key] = val
+        self.triggle('change')        
 
     def use_smooth(self,fn):
         self.smooth = lambda data:DataSet(*fn(*data()))
 
-    def clear_datas(self,reg):
-        keys = self.datas.keys()
+    def clear_datas(self,text,full=False):
+        if full == True:
+            reg = r'^%s$' % text
+        else:
+            reg = r'^%s' % text
+        keys = list(self.datas.keys())
+        changed = False
         for k in keys:
             if re.match(reg,k):
+                changed = True
                 del self.datas[k]
-        self.triggle()
+                if k in self.for_fitting:
+                    idx = self.for_fitting.index(k)
+                    self.for_fitting[idx] = ''
+        if not self.selected in self.datas:
+            self.selected = ''
+        if changed:
+            self.triggle('change')
+
+    def remove_datas(self):
+        if self.selected != '':
+            self.clear_datas(self.selected)
+
+    def remove_data(self):
+        if self.selected != '':
+            self.clear_datas(self.selected,True)
 
     def read_data(self,file,define):
         data = File(file).read_data()
@@ -100,80 +169,75 @@ class Engine:
         y_data = matrix[:,vol_idx]
         return (x_data,y_data)
 
-    def read_pos_data(self,file,define=None):
-        self.clear_datas(r'^pos.*')
-        data = self.read_data(file,define)
-        self.datas['pos'] = DataSet(*data)
-        self.selected = 'pos'
-        self.triggle()
+    def read_pos_data(self,filename,define=None):
+        if not self.pos_tag == None:
+            self.clear_datas(self.pos_tag)
+        data = self.read_data(filename,define)
+        (filepath, tempfilename) = os.path.split(filename)
+        (filename, filetype) = os.path.splitext(tempfilename)
+        self.pos_tag = filename
+        self.add_data(filename,DataSet(*data))
+        self.select(filename)
 
-    def read_neg_data(self,file,define=None):
-        self.clear_datas(r'^neg.*')
-        data = self.read_data(file,define)
-        self.datas['neg'] = DataSet(*data)
-        self.selected = 'neg'
-        self.triggle()
+    def read_neg_data(self,filename,define=None):
+        if not self.neg_tag == None:
+            self.clear_datas(self.neg_tag)
+        data = self.read_data(filename,define)
+        (filepath, tempfilename) = os.path.split(filename)
+        (filename, filetype) = os.path.splitext(tempfilename)
+        self.neg_tag = filename
+        self.add_data(filename,DataSet(*data))
+        self.select(filename)
 
-    def read_full_data(self,file,define=None):
-        self.clear_datas(r'^full.*')
-        data = self.read_data(file,define)
-        self.datas['full'] = DataSet(*data)
-        self.selected = 'full'
-        self.triggle()
+    def read_full_data(self,filename,define=None):
+        data = self.read_data(filename,define)
+        (filepath, tempfilename) = os.path.split(filename)
+        (filename, filetype) = os.path.splitext(tempfilename)
+        self.add_data(filename,DataSet(*data))
+        self.select(filename)
 
     def modify_data(self,func,name):
         key = self.selected
         if key in self.datas:
             new_name = key+name
-            self.datas[new_name] = func(self.datas[key])
-            self.selected = new_name
-            self.triggle()
+            self.add_data(new_name,func(self.datas[key]))
+            self.select(new_name)
 
     def smooth_data(self):
-        self.modify_data(self.smooth,'_smooth')
+        self.modify_data(self.smooth,'_M')
 
     def diff_data(self):
-        self.modify_data(self.diff,'_diff')
+        self.modify_data(self.diff,'_D')
 
     def cut_data(self):
-        self.modify_data(self.cut,'_cut')
+        self.modify_data(self.cut,'_C')
 
     def invert_data(self):
-        self.modify_data(self.invert,'_invert')
+        self.modify_data(self.invert,'_I')
 
     def skip_data(self):
-        self.modify_data(self.skip,'_skip')
-
-    def scale_data(self):
-        self.modify_data(self.scale,'_scale')
+        self.modify_data(self.skip,'_S')
 
     def draw_data(self,draw):
         draw(*self.data(),self.selected)
-    
-    def choise_fitting_datas(self,pos,neg,full):
-        if not pos in self.datas:
-            return
-        if not neg in self.datas:
-            return
-        if not full in self.datas:
-            return
-        self.for_fitting = [pos,neg,full]
 
     def init_guess(self):
-        if not len(self.for_fitting) == 3:
+        if self.for_fitting[0]=='' or self.for_fitting[1]=='' or self.for_fitting[2]=='':
             return
         self.params[0] = self.datas[self.for_fitting[2]].x_max / self.datas[self.for_fitting[0]].x_max
         self.params[2] = self.datas[self.for_fitting[2]].x_max / self.datas[self.for_fitting[1]].x_max
+        self.triggle('fitting')
 
     def fit_data(self):
-        if not len(self.for_fitting) == 3:
-            return None
+        if self.for_fitting[0]=='' or self.for_fitting[1]=='' or self.for_fitting[2]=='':
+            return
         pos = self.datas[self.for_fitting[0]]
         neg = self.datas[self.for_fitting[1]]
         full = self.datas[self.for_fitting[2]]
+        #print(self.for_fitting,self.params)
         fittor = Fitting(pos,neg,full)
-        fittor.pos_init_guess(*self.params[0:2])
-        fittor.neg_init_guess(*self.params[2:4])
+        fittor.init_guess(*self.params)
+        fittor.lock_params(*self.locked)
         if self.fitting_method == 'VQ':
             params = fittor.fit_leastsq().x
         elif self.fitting_method == 'dVdQ':
@@ -184,14 +248,48 @@ class Engine:
         pos_y = interpolate.interp1d(pos.x_data*w1-s1,pos.y_data, fill_value="extrapolate")(x_data)
         neg_y = interpolate.interp1d(neg.x_data*w2-s2,neg.y_data, fill_value="extrapolate")(x_data)
         if self.fitting_method == 'VQ':
-            self.datas[self.for_fitting[0]+'_fitting'] = DataSet(x_data,pos_y)
-            self.datas[self.for_fitting[1]+'_fitting'] = DataSet(x_data,neg_y)
-            self.datas[self.for_fitting[2]+'_fitting'] = DataSet(x_data,pos_y-neg_y)
+            self.datas[self.for_fitting[0]+'_F'] = DataSet(x_data,pos_y)
+            self.datas[self.for_fitting[1]+'_F'] = DataSet(x_data,neg_y)
+            self.datas[self.for_fitting[2]+'_F'] = DataSet(x_data,pos_y-neg_y)
         elif self.fitting_method == 'dVdQ':
-            self.datas[self.for_fitting[0]+'_fitting'] = DataSet(x_data,pos_y/w1)
-            self.datas[self.for_fitting[1]+'_fitting'] = DataSet(x_data,neg_y/w2)
-            self.datas[self.for_fitting[2]+'_fitting'] = DataSet(x_data,pos_y/w1-neg_y/w2)
-        self.triggle()
+            self.datas[self.for_fitting[0]+'_F'] = DataSet(x_data,pos_y/w1)
+            self.datas[self.for_fitting[1]+'_F'] = DataSet(x_data,neg_y/w2)
+            self.datas[self.for_fitting[2]+'_F'] = DataSet(x_data,pos_y/w1-neg_y/w2)
+        self.triggle('change')
+        self.triggle('fitting')
         return params
 
+    def cal_RMSD(self):
+        if self.for_fitting[0]=='' or self.for_fitting[1]=='' or self.for_fitting[2]=='':
+            return
+        pos = self.datas[self.for_fitting[0]]()
+        neg = self.datas[self.for_fitting[1]]()
+        full = self.datas[self.for_fitting[2]]()
+        x_data = full[0]
+        y_data = full[1]
+        (w1,s1,w2,s2) = self.params
+        pos_y = interpolate.interp1d(pos[0]*w1-s1,pos[1], fill_value="extrapolate")(x_data)
+        neg_y = interpolate.interp1d(neg[0]*w2-s2,neg[1], fill_value="extrapolate")(x_data)
+        if self.fitting_method == 'VQ':
+            sub = pos_y-neg_y-y_data
+        else:
+            sub = pos_y/w1-neg_y/w2-y_data
+        return math.sqrt(np.sum(sub*sub)/x_data.size)
 
+    def scale_data(self):
+        if self.for_fitting[0] != '':
+            key = self.for_fitting[0]
+            pos = self.datas[key]
+            if self.fitting_method == 'VQ':
+                self.datas[key+'_N'] = pos.modify_x(*self.params[0:2])
+            else:
+                self.datas[key+'_N'] = pos.modify_x(*self.params[0:2]).modify_y(1/self.params[0],0)
+            self.triggle('change')
+        if self.for_fitting[1] != '':
+            key = self.for_fitting[1]
+            neg = self.datas[key]
+            if self.fitting_method == 'VQ':
+                self.datas[key+'_N'] = neg.modify_x(*self.params[2:4])
+            else:
+                self.datas[key+'_N'] = neg.modify_x(*self.params[2:4]).modify_y(1/self.params[2],0)
+            self.triggle('change')

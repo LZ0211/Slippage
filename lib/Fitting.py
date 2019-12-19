@@ -8,24 +8,13 @@ class Fitting:
         self.neg = neg()
         self.full = full()
         self.params = [1.0,0.0,1.0,0.0]
+        self.locked = [False,False,False,False]
+    
+    def init_guess(self,a,b,c,d):
+        self.params = [a,b,c,d]
 
-    #插值法生成与全电池横坐标对应的值
-    def pos_init_guess(self,weight,slip):
-        self.cache_pos = []
-        self.params[0] = weight
-        self.params[1] = slip
-        pos = self.pos
-        #电压不变，容量调整
-        modified = (pos[0]*weight+slip,pos[1])
-        self.pos_generator = interpolate.interp1d(*modified,kind='cubic')
-
-    def neg_init_guess(self,weight,slip):
-        self.cache_neg = []
-        self.params[2] = weight
-        self.params[3] = slip
-        neg = self.neg
-        modified = (neg[0]*weight+slip,neg[1])
-        self.neg_generator = interpolate.interp1d(*modified,kind='cubic')
+    def lock_params(self,a,b,c,d):
+        self.locked = [a,b,c,d]
 
     def fit_leastsq(self):
         params = self.params
@@ -33,12 +22,20 @@ class Fitting:
         pos = self.pos
         neg =self.neg
         slip_upper = full[0][-1]*0.5
-        bounds = ((0,0,0,0),(params[0]*1.2,slip_upper,params[2]*1.2,slip_upper))
+        upper = [params[0]*1.2,slip_upper,params[2]*1.2,slip_upper]
+        lower = [0,0,0,0]
+        bounds = (lower,upper)
         def cal_err(p,x,y):
             (w1,s1,w2,s2)=p
-            #_pos = interpolate.UnivariateSpline(pos[0]*w1-s1,pos[1])(x)
+            if self.locked[0]:
+                w1 = self.params[0]
+            if self.locked[1]:
+                s1 = self.params[1]
+            if self.locked[2]:
+                w2 = self.params[2]
+            if self.locked[3]:
+                s2 = self.params[3]
             _pos = interpolate.interp1d(pos[0]*w1-s1,pos[1], fill_value="extrapolate")(x)
-            #_neg = interpolate.UnivariateSpline(neg[0]*w2-s2,neg[1])(x)
             _neg = interpolate.interp1d(neg[0]*w2-s2,neg[1], fill_value="extrapolate")(x)
             return _pos-_neg-y
         return optimize.least_squares(cal_err, params, args=full,verbose=1,bounds=bounds)
@@ -49,12 +46,20 @@ class Fitting:
         pos = self.pos
         neg =self.neg
         slip_upper = full[0][-1]*0.5
-        bounds = ((0,0,0,0),(params[0]*1.2,slip_upper,params[2]*1.2,slip_upper))
+        upper = [params[0]*1.2,slip_upper,params[2]*1.2,slip_upper]
+        lower = [0,0,0,0]
+        bounds = (lower,upper)
         def cal_err(p,x,y):
             (w1,s1,w2,s2)=p
-            #_pos = interpolate.UnivariateSpline(pos[0]*w1-s1,pos[1])(x)
+            if self.locked[0]:
+                w1 = self.params[0]
+            if self.locked[1]:
+                s1 = self.params[1]
+            if self.locked[2]:
+                w2 = self.params[2]
+            if self.locked[3]:
+                s2 = self.params[3]
             _pos = interpolate.interp1d(pos[0]*w1-s1,pos[1], fill_value="extrapolate")(x) / w1
-            #_neg = interpolate.UnivariateSpline(neg[0]*w2-s2,neg[1])(x)
             _neg = interpolate.interp1d(neg[0]*w2-s2,neg[1], fill_value="extrapolate")(x) / w2
             return _pos-_neg-y
         return optimize.least_squares(cal_err, params, args=full,verbose=1,bounds=bounds)
