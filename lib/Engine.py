@@ -128,6 +128,10 @@ class Engine:
     def use_smooth(self,fn):
         self.smooth = lambda data:DataSet(*fn(*data()))
 
+    def get_data(self):
+        if self.selected in self.datas:
+            return self.datas[self.selected]
+
     def clear_datas(self,text,full=False):
         if full == True:
             reg = r'^%s$' % text
@@ -154,6 +158,14 @@ class Engine:
     def remove_data(self):
         if self.selected != '':
             self.clear_datas(self.selected,True)
+
+    def alias_data(self,name):
+        if not self.selected in self.datas:
+            return
+        data = self.datas[self.selected]
+        self.datas[name] = data
+        del self.datas[self.selected]
+        self.triggle('change')
 
     def read_data(self,file,define):
         data = File(file).read_data()
@@ -217,9 +229,6 @@ class Engine:
 
     def skip_data(self):
         self.modify_data(self.skip,'_S')
-
-    def draw_data(self,draw):
-        draw(*self.data(),self.selected)
 
     def init_guess(self):
         if self.for_fitting[0]=='' or self.for_fitting[1]=='' or self.for_fitting[2]=='':

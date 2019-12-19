@@ -98,7 +98,7 @@ class Ui_MainWindow(object):
         self.Pos_Scale_SpinBox = QtWidgets.QDoubleSpinBox(self.Positive_Box)
         self.Pos_Scale_SpinBox.setGeometry(QtCore.QRect(170, 15, 61, 22))
         self.Pos_Scale_SpinBox.setDecimals(4)
-        self.Pos_Scale_SpinBox.setSingleStep(1.0)
+        self.Pos_Scale_SpinBox.setSingleStep(0.01)
         self.Pos_Scale_SpinBox.setProperty("value", 1.0)
         self.Pos_Shift_SpinBox = QtWidgets.QDoubleSpinBox(self.Positive_Box)
         self.Pos_Shift_SpinBox.setGeometry(QtCore.QRect(170, 43, 61, 22))
