@@ -233,8 +233,12 @@ class Engine:
     def init_guess(self):
         if self.for_fitting[0]=='' or self.for_fitting[1]=='' or self.for_fitting[2]=='':
             return
-        self.params[0] = self.datas[self.for_fitting[2]].x_max / self.datas[self.for_fitting[0]].x_max
-        self.params[2] = self.datas[self.for_fitting[2]].x_max / self.datas[self.for_fitting[1]].x_max
+        if self.locked[0] or self.locked[2]:
+            return
+        if not self.locked[0]:
+            self.params[0] = self.datas[self.for_fitting[2]].x_max / self.datas[self.for_fitting[0]].x_max
+        if not self.locked[2]:
+            self.params[2] = self.datas[self.for_fitting[2]].x_max / self.datas[self.for_fitting[1]].x_max
         self.triggle('fitting')
 
     def fit_data(self):
@@ -286,19 +290,33 @@ class Engine:
         return math.sqrt(np.sum(sub*sub)/x_data.size)
 
     def scale_data(self):
-        if self.for_fitting[0] != '':
-            key = self.for_fitting[0]
+        pos = None
+        neg = None
+        key = self.for_fitting[0]
+        if key != '':
             pos = self.datas[key]
             if self.fitting_method == 'VQ':
                 self.datas[key+'_N'] = pos.modify_x(*self.params[0:2])
             else:
                 self.datas[key+'_N'] = pos.modify_x(*self.params[0:2]).modify_y(1/self.params[0],0)
-            self.triggle('change')
-        if self.for_fitting[1] != '':
-            key = self.for_fitting[1]
+            pos = self.datas[key+'_N']
+        key = self.for_fitting[1]
+        if key != '':
             neg = self.datas[key]
             if self.fitting_method == 'VQ':
                 self.datas[key+'_N'] = neg.modify_x(*self.params[2:4])
             else:
                 self.datas[key+'_N'] = neg.modify_x(*self.params[2:4]).modify_y(1/self.params[2],0)
+            neg = self.datas[key+'_N']
+        key = self.for_fitting[2]
+        if key == '':
+            if pos != None or neg != None:
+                self.triggle('change')
+            return
+        if pos != None and neg != None:
+            full = self.datas[self.for_fitting[2]]()
+            x_data = full[0]
+            pos_y = interpolate.interp1d(*pos(), fill_value="extrapolate")(x_data)
+            neg_y = interpolate.interp1d(*neg(), fill_value="extrapolate")(x_data)
+            self.datas[key+'_N'] = DataSet(x_data,pos_y-neg_y)
             self.triggle('change')

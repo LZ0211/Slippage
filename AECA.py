@@ -45,7 +45,7 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
         self.bindInputAction()
         self.bindRadioAction()
         #添加平滑选项
-        self.addSmoothOptions()
+        self.initSmoothOptions()
         #添加数据列表
         self.core.bind('change',self.updateList)
         self.core.bind('select',self.updateCutRange)
@@ -63,12 +63,15 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
             return
         if language == 'English':
             self.transEnglish()
+            self.initSmoothOptions()
             self.language = 'English'
         if language == 'Chinese Simplified':
             self.transChineseSimplified()
+            self.initSmoothOptions()
             self.language = 'Chinese Simplified'
         if language == 'Chinese Traditional':
             self.transChineseTraditional()
+            self.initSmoothOptions()
             self.language = 'Chinese Traditional'
         self.settings.setValue('Display/language',language)
         self.settings.sync()
@@ -82,7 +85,12 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
         self.action_Chinese_Traditional.triggered.connect(lambda :self.switchLanguage('Chinese Traditional'))
 
     def bindEditAction(self):
+        def rename():
+            value, ok = QInputDialog.getText(self, self.translateText("Data Rename"), self.translateText("Please input new data name:"), QLineEdit.Normal, self.core.selected)
+            if ok and value != '' and value != self.core.selected:
+                self.core.alias_data(value)
         self.action_View.triggered.connect(self.checkSelectedBefore(self.viewData))
+        self.action_Rename.triggered.connect(self.checkSelectedBefore(rename))
         self.action_Delete.triggered.connect(self.checkSelectedBefore(self.core.remove_data))
         self.action_Export.triggered.connect(self.checkSelectedBefore(self.exportData))
         self.action_Delete_All.triggered.connect(self.checkSelectedBefore(self.core.remove_datas))
@@ -167,13 +175,14 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
         self.Fitting_Button.clicked.connect(self.tryRun(self.core.fit_data))
         self.Scale_Button.clicked.connect(self.tryRun(self.core.scale_data))
 
-    def addSmoothOptions(self):
-        options = ['Simple','Median','Gaussian','Savitzky_Golay','Spline']
+    def initSmoothOptions(self):
+        self.Methods_List.clear()
+        options = ['Simple','Median','Savitzky_Golay','Gaussian','Spline']
         for option in options:
             self.Methods_List.addItem(option)
         def select_method(text):
             if text == 'Simple':
-                self.Param_Name.setText('Smooth Window')
+                self.Param_Name.setText(self.translateText('Smooth Window'))
                 self.Smooth_Param.setValue(3)
                 self.Smooth_Param.setSingleStep(2)
                 self.Smooth_Param.setDecimals(0)
@@ -181,7 +190,7 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.Smooth_Param.setMaximum(99)
                 self.core.use_smooth(lambda x,y:Smooth.Simple(x,y,3))
             elif  text == 'Median':
-                self.Param_Name.setText('Smooth Window')
+                self.Param_Name.setText(self.translateText('Smooth Window'))
                 self.Smooth_Param.setValue(3)
                 self.Smooth_Param.setSingleStep(2)
                 self.Smooth_Param.setDecimals(0)
@@ -189,7 +198,7 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.Smooth_Param.setMaximum(99)
                 self.core.use_smooth(lambda x,y:Smooth.Median(x,y,3))
             elif text == 'Savitzky_Golay':
-                self.Param_Name.setText('Smooth Window')
+                self.Param_Name.setText(self.translateText('Smooth Window'))
                 self.Smooth_Param.setSingleStep(2)
                 self.Smooth_Param.setDecimals(0)
                 self.Smooth_Param.setMinimum(5)
@@ -197,7 +206,7 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.Smooth_Param.setValue(5)
                 self.core.use_smooth(lambda x,y:Smooth.Savitzky_Golay(x,y,5))
             elif text == 'Gaussian':
-                self.Param_Name.setText('Sigma')
+                self.Param_Name.setText(self.translateText('Sigma'))
                 self.Smooth_Param.setSingleStep(0.001)
                 self.Smooth_Param.setDecimals(3)
                 self.Smooth_Param.setMinimum(0)
@@ -205,7 +214,7 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.Smooth_Param.setValue(1)
                 self.core.use_smooth(lambda x,y:Smooth.Gaussian(x,y,1))
             elif text == 'Spline':
-                self.Param_Name.setText('Noise Factor')
+                self.Param_Name.setText(self.translateText('Noise Factor'))
                 self.Smooth_Param.setSingleStep(1E-6)
                 self.Smooth_Param.setDecimals(6)
                 self.Smooth_Param.setMinimum(0)
@@ -214,7 +223,7 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.core.use_smooth(lambda x,y:Smooth.Spline(x,y,1E-3))
 
         self.Methods_List.currentTextChanged.connect(select_method)
-        self.Param_Name.setText('Smooth Window')
+        self.Param_Name.setText(self.translateText('Smooth Window'))
         self.Smooth_Param.setSingleStep(2)
         self.Smooth_Param.setDecimals(0)
         self.Smooth_Param.setMinimum(3)
@@ -222,10 +231,10 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
         self.Smooth_Param.setValue(3)
 
     def infomation(self,text):
-        QMessageBox.information(self,"Information",text,QMessageBox.Yes)
+        QMessageBox.information(self,self.translateText("Information"),text,QMessageBox.Yes)
         
     def critical(self,text):
-        QMessageBox.critical(self,"Critical",text,QMessageBox.Yes)
+        QMessageBox.critical(self,self.translateText("Critical"),text,QMessageBox.Yes)
 
     def updateRecentFiles(self):
         self.menu_Recent_Files.clear()
@@ -238,7 +247,7 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
     def checkSelectedBefore(self,fn):
         def func(*x):
             if self.core.selected == '':
-                self.critical('No data selcted!')
+                self.critical(self.translateText('No data selcted!'))
                 return
             return fn()
         return func
@@ -248,7 +257,7 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
             try:
                 fn()
             except Exception as identifier:
-                self.critical(str(identifier))
+                self.critical(self.translateText(str(identifier)))
         return func
 
     def viewData(self):
@@ -259,16 +268,20 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
         lastFilePath = self.settings.value("File/lastFilePath") or './'
         defaultExtension = "Text File (*.txt)"
         extensions = "Text File (*.txt);;CSV File (*.csv);;Excel File (*.xls;*.xlsx)"
-        (fileName,fileType) = QtWidgets.QFileDialog.getSaveFileName(self,"Save File",lastFilePath,extensions,defaultExtension)
+        (fileName,fileType) = QtWidgets.QFileDialog.getSaveFileName(self,self.translateText("Save File"),lastFilePath,extensions,defaultExtension)
         if fileName == '':
             return
         File(fileName).write_data(str(self.core.datas[self.core.selected]))
 
     def initGraphView(self):
-        self.plot = pg.PlotWidget(enableAutoRange=True,title="Electrical Chemistry Datas")
-        self.plot.showGrid(x=True,y=True, alpha=0.5)
+        self.plot = pg.PlotWidget(enableAutoRange=True)
         self.plot.setAutoVisible(y=True)
-        self.plot.setLabel(axis='bottom',text='Capacity (mAh)')
+        self.plot.setTitle(title='Electrical Chemistry Datas',color='000',bold=True,size="12pt")
+        self.plot.setLabel(axis='bottom',text='<h3><span style="color:#000000;font-size:8pt">Capacity (mAh)</span></h3>')
+        self.plot.setBackground('fff')
+        self.plot.getAxis('bottom').setPen(color='000',width=1.5)
+        self.plot.getAxis('left').setPen(color='000',width=1.5)
+        self.plot.showGrid(x=True,y=True, alpha=0.25)
         self.legand = self.plot.addLegend()
         self.graphicsView.addWidget(self.plot)
         self.curveList = []
@@ -424,7 +437,7 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
         recentFiles = self.settings.value('File/recentFiles') or []
         defaultExtension = self.settings.value('FileStructure/defaultExtension') or "Text File (*.txt)"
         extensions = "Text File (*.txt);;CSV File (*.csv);;Excel File (*.xls;*.xlsx)"
-        (fileName,fileType) = QtWidgets.QFileDialog.getOpenFileName(self,'Please select a data file',lastFilePath,extensions,defaultExtension)
+        (fileName,fileType) = QtWidgets.QFileDialog.getOpenFileName(self,self.translateText('Please select a data file'),lastFilePath,extensions,defaultExtension)
         if fileName == '':
             return
         fileName = fileName.replace('/','\\')
@@ -440,11 +453,11 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
             self.settings.sync()
         except Exception as identify:
             print(identify)
-            self.critical('Invalid Data File!')
+            self.critical(self.translateText('Invalid Data File!'))
 
     def convertFile(self,old,new):
         lastFilePath = self.settings.value("File/lastFilePath") or './'
-        (fileName,fileType) = QtWidgets.QFileDialog.getOpenFileName(self,'Please select a data file',lastFilePath,old,old)
+        (fileName,fileType) = QtWidgets.QFileDialog.getOpenFileName(self,self.translateText('Please select a data file'),lastFilePath,old,old)
         if fileName == '':
             return
         fileName = fileName.replace('/','\\')
@@ -454,7 +467,7 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
             file = File(fileName)
             file.read_data()
         except:
-            self.critical('A error occur, please contact author for help!')
+            self.critical(self.translateText('A error occur, please contact author for help!'))
             return
         (fileName,fileType) = QtWidgets.QFileDialog.getSaveFileName(self,"Save File",dirName,new,new)
         if fileName == '':
