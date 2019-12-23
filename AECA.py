@@ -310,10 +310,10 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
             else:
                 item.setCheckState(Qt.Unchecked)
             self.listWidget.addItem(item)
-            if self.core.pos_tag and re.match(self.core.pos_tag,k):
+            if re.match('|'.join(self.core.pos_tag),k):
                 self.Pos_List.addItem(k)
                 continue
-            if self.core.neg_tag and re.match(self.core.neg_tag,k):
+            if re.match('|'.join(self.core.neg_tag),k):
                 self.Neg_List.addItem(k)
                 continue
             self.Full_List.addItem(k)

@@ -19,8 +19,8 @@ class Engine:
         self.skip_window = 1
         self.diff_window = 1
         self.cut_range = [0,100]
-        self.pos_tag = None
-        self.neg_tag = None
+        self.pos_tag = []
+        self.neg_tag = []
         self.fitting_method = 'VQ'
         self.events = {
             'select':[],
@@ -165,6 +165,10 @@ class Engine:
         data = self.datas[self.selected]
         self.datas[name] = data
         del self.datas[self.selected]
+        if re.match('|'.join(self.pos_tag),self.selected):
+            self.pos_tag.append(name)
+        if re.match('|'.join(self.neg_tag),self.selected):
+            self.neg_tag.append(name)
         self.triggle('change')
 
     def read_data(self,file,define):
@@ -182,22 +186,18 @@ class Engine:
         return (x_data,y_data)
 
     def read_pos_data(self,filename,define=None):
-        if not self.pos_tag == None:
-            self.clear_datas(self.pos_tag)
         data = self.read_data(filename,define)
         (filepath, tempfilename) = os.path.split(filename)
         (filename, filetype) = os.path.splitext(tempfilename)
-        self.pos_tag = filename
+        self.pos_tag.append(filename)
         self.add_data(filename,DataSet(*data))
         self.select(filename)
 
     def read_neg_data(self,filename,define=None):
-        if not self.neg_tag == None:
-            self.clear_datas(self.neg_tag)
         data = self.read_data(filename,define)
         (filepath, tempfilename) = os.path.split(filename)
         (filename, filetype) = os.path.splitext(tempfilename)
-        self.neg_tag = filename
+        self.neg_tag.append(filename)
         self.add_data(filename,DataSet(*data))
         self.select(filename)
 
