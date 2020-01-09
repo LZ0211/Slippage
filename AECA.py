@@ -90,6 +90,7 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
             if ok and value != '' and value != self.core.selected:
                 self.core.alias_data(value)
         self.action_View.triggered.connect(self.checkSelectedBefore(self.viewData))
+        self.action_Swap.triggered.connect(self.checkSelectedBefore(self.core.invert_data))
         self.action_Rename.triggered.connect(self.checkSelectedBefore(rename))
         self.action_Delete.triggered.connect(self.checkSelectedBefore(self.core.remove_data))
         self.action_Export.triggered.connect(self.checkSelectedBefore(self.exportData))

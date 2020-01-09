@@ -36,25 +36,26 @@ class DataSet:
         if skip == None or skip == 1:
             return self
         size = self.size - self.size % skip
-        x_data = self.x_data[0:size:skip]
-        y_data = np.mean(self.y_data[0:size].reshape(x_data.size,skip),axis=1)
+        _size = int(size / skip)
+        x_data = np.mean(self.x_data[0:size].reshape(_size,skip),axis=1)
+        y_data = np.mean(self.y_data[0:size].reshape(_size,skip),axis=1)
         return DataSet(x_data,y_data)
 
     def invert(self):
         return DataSet(self.y_data,self.x_data)
 
-    def diff_x(self,skip=None):
-        return np.diff(np.array(self.x_data)) if skip == None or skip == 1 else self.x_data[skip:]-self.x_data[0:0-skip]
+    def diff_x(self,skip=1):
+        return self.x_data[2*skip:] - self.x_data[0:0-2*skip]
 
-    def diff_y(self,skip=None):
-        return np.diff(np.array(self.y_data)) if skip == None or skip == 1  else self.y_data[skip:]-self.y_data[0:0-skip]
+    def diff_y(self,skip=1):
+        return self.y_data[2*skip:] - self.y_data[0:0-2*skip]
 
-    def diff(self,skip=None):
-        x_data = self.x_data[1:] if skip == None else self.x_data[:0-skip]
+    def diff(self,skip=1):
+        x_data = self.x_data[skip:0-skip]
         y_data = np.divide(self.diff_y(skip),self.diff_x(skip))
         return DataSet(x_data,y_data)
 
-    def diff_invert(self,skip=None):
+    def diff_invert(self,skip=1):
         return self.invert().diff(skip)
 
     def modify_x(self,w,s):

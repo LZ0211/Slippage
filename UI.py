@@ -104,6 +104,7 @@ class Ui_MainWindow(object):
         self.Pos_Shift_SpinBox.setGeometry(QtCore.QRect(170, 43, 61, 22))
         self.Pos_Shift_SpinBox.setWrapping(False)
         self.Pos_Shift_SpinBox.setDecimals(4)
+        self.Pos_Shift_SpinBox.setMaximum(999.99)
         self.Pos_Scale_checkBox = QtWidgets.QCheckBox(self.Positive_Box)
         self.Pos_Scale_checkBox.setGeometry(QtCore.QRect(240, 16, 22, 22))
         self.Pos_Scale_checkBox.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
@@ -137,6 +138,7 @@ class Ui_MainWindow(object):
         self.Neg_Shift_SpinBox = QtWidgets.QDoubleSpinBox(self.Negative_Box)
         self.Neg_Shift_SpinBox.setGeometry(QtCore.QRect(170, 43, 61, 22))
         self.Neg_Shift_SpinBox.setDecimals(4)
+        self.Neg_Shift_SpinBox.setMaximum(999.99)
         self.Neg_Scale_checkBox = QtWidgets.QCheckBox(self.Negative_Box)
         self.Neg_Scale_checkBox.setGeometry(QtCore.QRect(240, 16, 22, 22))
         self.Neg_Scale_checkBox.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
@@ -209,6 +211,7 @@ class Ui_MainWindow(object):
         self.action_Delete = QtWidgets.QAction(MainWindow)
         self.action_Delete_All = QtWidgets.QAction(MainWindow)
         self.action_View = QtWidgets.QAction(MainWindow)
+        self.action_Swap = QtWidgets.QAction(MainWindow)
         self.action_Rename = QtWidgets.QAction(MainWindow)
         self.action_Export = QtWidgets.QAction(MainWindow)
         self.action_English = QtWidgets.QAction(MainWindow)
@@ -225,6 +228,7 @@ class Ui_MainWindow(object):
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.menu_Recent_Files.menuAction())
         self.menu_Edit.addAction(self.action_View)
+        self.menu_Edit.addAction(self.action_Swap)
         self.menu_Edit.addAction(self.action_Rename)
         self.menu_Edit.addAction(self.action_Delete)
         self.menu_Edit.addAction(self.action_Export)
@@ -305,6 +309,7 @@ class Ui_MainWindow(object):
         self.action_TXT2Excel.setText(_translate("MainWindow", "TXT2Excel"))
         self.action_Delete.setText(_translate("MainWindow", "&Delete"))
         self.action_View.setText(_translate("MainWindow", "&View"))
+        self.action_Swap.setText(_translate("MainWindow", "&Swap Axes"))
         self.action_Rename.setText(_translate("MainWindow", "&Rename"))
         self.action_Export.setText(_translate("MainWindow", "&Export"))
         self.action_Delete_All.setText(_translate("MainWindow", "&Delete All"))
@@ -323,11 +328,11 @@ class Ui_MainWindow(object):
         self.retranslateUI()
 
     def transChineseSimplified(self):
-        self.langText = {"Data List":"数据列表","Smooth Methods":"滤波方法","Skip Interval":"采点间隔","Skip":"采点","Diff Interval":"微分间隔","Diff":"微分","Smooth Parameter":"滤波参数","Smooth":"滤波","Date Type":"数据类型","Positive":"正极","Negative":"负极","FullCell":"全电池","Scale":"缩放","Shift":"平移","Fitting":"拟合","Cut From":"切割 从","To":"到","Cut":"切割","&File":"文件","&Open":"打开","&Recent Files":"最近打开","&Edit":"编辑","&Tool":"工具","&Help":"帮助","&Language":"语言","&Save":"保存","&Preferences":"首选项","&Exit":"退出","Positive Reference":"正极参考数据","Negative Reference":"负极参考数据","Measured Data":"测试数据","Excel2TXT":"Excel转TXT","Excel2CSV":"Excel转CSV","CSV2TXT":"CSV转TXT","CSV2Excel":"CSV转Excel","TXT2CSV":"TXT转CSV","TXT2Excel":"TXT转Excel","&Delete":"删除","&View":"查看","&Rename":"重命名","&Export":"导出","&Delete All":"删除全部","&English":"英语","&Chinese Simplified":"简体中文","&Chinese Traditional":"繁体中文","&Email":"电子邮箱"
+        self.langText = {"Data List":"数据列表","Smooth Methods":"滤波方法","Skip Interval":"采点间隔","Skip":"采点","Diff Interval":"微分间隔","Diff":"微分","Smooth Parameter":"滤波参数","Smooth":"滤波","Date Type":"数据类型","Positive":"正极","Negative":"负极","FullCell":"全电池","Scale":"缩放","Shift":"平移","Fitting":"拟合","Cut From":"切割 从","To":"到","Cut":"切割","&File":"文件","&Open":"打开","&Recent Files":"最近打开","&Edit":"编辑","&Tool":"工具","&Help":"帮助","&Language":"语言","&Save":"保存","&Preferences":"首选项","&Exit":"退出","Positive Reference":"正极参考数据","Negative Reference":"负极参考数据","Measured Data":"测试数据","Excel2TXT":"Excel转TXT","Excel2CSV":"Excel转CSV","CSV2TXT":"CSV转TXT","CSV2Excel":"CSV转Excel","TXT2CSV":"TXT转CSV","TXT2Excel":"TXT转Excel","&Delete":"删除","&View":"查看","&Swap Axes":"转置","&Rename":"重命名","&Export":"导出","&Delete All":"删除全部","&English":"英语","&Chinese Simplified":"简体中文","&Chinese Traditional":"繁体中文","&Email":"电子邮箱"
         ,"Smooth Window":"滤波窗口","Noise Factor":"噪声因子","Sigma":"标准差","Data Rename":"数据重命名","Please input new data name:":"请输入新的数据名：","Information":"消息","Critical":"警告","No data selcted!":"没有选中的数据！","Save File":"保存文件","Please select a data file":"请选择一个数据文件","Invalid Data File!":"不是合法的数据文件！","A error occur, please contact author for help!":"未知错误，请联系作者！"}
         self.retranslateUI()
 
     def transChineseTraditional(self):
-        self.langText = {"Data List":"數據列表","Smooth Methods":"濾波方法","Skip Interval":"采點間隔","Skip":"采點","Diff Interval":"微分間隔","Diff":"微分","Smooth Parameter":"濾波參數","Smooth":"濾波","Date Type":"數據類型","Positive":"正極","Negative":"負極","FullCell":"全電池","Scale":"縮放","Shift":"平移","Fitting":"擬合","Cut From":"切割 從","To":"到","Cut":"切割","&File":"文件","&Open":"打開","&Recent Files":"最近打開","&Edit":"編輯","&Tool":"工具","&Help":"幫助","&Language":"語言","&Save":"保存","&Preferences":"首選項","&Exit":"退出","Positive Reference":"正極參考數據","Negative Reference":"負極參考數據","Measured Data":"測試數據","Excel2TXT":"Excel轉TXT","Excel2CSV":"Excel轉CSV","CSV2TXT":"CSV轉TXT","CSV2Excel":"CSV轉Excel","TXT2CSV":"TXT轉CSV","TXT2Excel":"TXT轉Excel","&Delete":"刪除","&View":"查看","&Rename":"重命名","&Export":"導出","&Delete All":"刪除全部","&English":"英語","&Chinese Simplified":"簡體中文","&Chinese Traditional":"繁體中文","&Email":"電子郵箱"
+        self.langText = {"Data List":"數據列表","Smooth Methods":"濾波方法","Skip Interval":"采點間隔","Skip":"采點","Diff Interval":"微分間隔","Diff":"微分","Smooth Parameter":"濾波參數","Smooth":"濾波","Date Type":"數據類型","Positive":"正極","Negative":"負極","FullCell":"全電池","Scale":"縮放","Shift":"平移","Fitting":"擬合","Cut From":"切割 從","To":"到","Cut":"切割","&File":"文件","&Open":"打開","&Recent Files":"最近打開","&Edit":"編輯","&Tool":"工具","&Help":"幫助","&Language":"語言","&Save":"保存","&Preferences":"首選項","&Exit":"退出","Positive Reference":"正極參考數據","Negative Reference":"負極參考數據","Measured Data":"測試數據","Excel2TXT":"Excel轉TXT","Excel2CSV":"Excel轉CSV","CSV2TXT":"CSV轉TXT","CSV2Excel":"CSV轉Excel","TXT2CSV":"TXT轉CSV","TXT2Excel":"TXT轉Excel","&Delete":"刪除","&View":"查看","&Rename":"重命名","&Swap Axes":"轉置","&Export":"導出","&Delete All":"刪除全部","&English":"英語","&Chinese Simplified":"簡體中文","&Chinese Traditional":"繁體中文","&Email":"電子郵箱"
         ,"Smooth Window":"濾波窗口","Noise Factor":"噪聲因子","Sigma":"標準差","Data Rename":"數據重命名","Please input new data name:":"請輸入新的數據名：","Information":"消息","Critical":"警告","No data selcted!":"沒有選中的數據！","Save File":"保存文件","Please select a data file":"請選擇壹個數據文件","Invalid Data File!":"不是合法的數據文件！","A error occur, please contact author for help!":"未知錯誤，請聯系作者！"}
         self.retranslateUI()
