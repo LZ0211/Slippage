@@ -1,17 +1,17 @@
 # Slippage
 # ATL-电化学分析软件
 
-## 1.**AECA程序的安装
+## 1. AECA程序的安装
 
-### 1.1**直接使用二进制版本
+### 1.1 直接使用二进制版本
 
 AECA的安装有很多种方法。最简单的方法是直接使用预编译版本的二进制可执行文件。
 
 预编译版本的AECA运行比较可靠，毋须安装任何程序运行环境，开箱即可使用。缺点是由于随程序一起打包了运行所需的python运行时和第三方函数库，因此体积比较大，且只支持window平台。
 
-### 1.2**使用Python源代码运行**
+### 1.2 使用Python源代码运行
 
-AECA程序是使用python语言进行开发的，从源码运行该程序必须安装Python 3.7x的运行环境。要安装Python运行环境，首先从Python官网[https://www.python.org/downloads/]下载对应版本和平台的安装包。
+AECA程序是使用python语言进行开发的，从源码运行该程序必须安装Python 3.7x的运行环境。要安装Python运行环境，首先从[Python官网](https://www.python.org/downloads/)下载对应版本和平台的安装包。
 
 安装完python之后，从控制台窗口输入命令
 
@@ -21,37 +21,49 @@ python -V
 
 如果显示Python 3.7.x,则说明python已经安装成功。继续在控制台窗口输入下面的命令
 
-| pip --help |
-| --- |
+```bash
+pip --help
+```
 
 执行上述命令后，如果能够看到下面的内容，则说明python的库管理程序pip也安装成功了。如果pip安装不成功，请重新安装python安装包。
 
-| Usage:  pip \&lt;command\&gt; [options] Commands:  install                     Install packages.  download                    Download packages.  uninstall                   Uninstall packages.  freeze                      Output installed packages in requirements …… |
-| --- |
+```bash
+Usage:
+  pip <command> [options]
+
+Commands:
+  install                     Install packages.
+  download                    Download packages.
+  uninstall                   Uninstall packages.
+  freeze                      Output installed packages in requirements 
+……
+```
 
 AECA程序依赖于多个第三方库，必须预先安装这些库，才能成功运行程序，第三方函数库的安装通过pip进行，执行如下命令安装AECA所需的库文件
 
-| pip install numpypip install scipy pip install matplotlib pip install pyQt5 pip install pyqtgraph pip install xlrd pip install xlwt pip install chardet |
-| --- |
+```bash
+pip install numpy matplotlib pyQt5 pyqtgraph xlrd xlwt chardet
+```
 
 安装完运行所需的函数库之后，双击AeCA.py即可运行程序。
 
-1.
-  1. 1.3 **从Python源代码编译**
+### 1.3 从Python源代码编译
 
 若需要将源代码打包成二进制文件，也通用需要python的运行环境，具体步骤可以参考上面。打包Python程序，需要先安装pyinstaller，在从控制台窗口输入下面的命令，即可完成安装。
 
-| pip install pyinstaller |
-| --- |
+```bash
+pip install pyinstaller
+```
 
 安装完pyinstaller之后，切换路径到AECA所在文件夹路径，然后执行下面的命令
 
-| pyinstaller -i resource/curve.ico -w AECA.py |
-| --- |
+```bash
+pyinstaller -i resource/curve.ico -w AECA.py
+```
 
 一段时间后，pyinstaller将程序打包完成，在当前的路径下可以看到新增的dist文件路径，其中的AECA文件夹就是打包的二进制运行程序。
 
-1. **2.**** AECA程序的功能介绍**
+## 2. AECA程序的功能介绍**
 
 AECA程序全称ATL-电化学分析器（ATL-Electrical Chemistry Analysor），该程序使用Python进行开发，并采用pyQt5开发了图形用户界面，其界面主窗口如下图所示
 
