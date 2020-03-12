@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # coding=utf-8
-import re,math,os
+import re,math,os,json,zipfile
 import numpy as np
 from scipy import interpolate
 from .DataSet import DataSet
-from .File import File
+from .File import File, Table
 from .Smooth import Smooth
 from .Fitting import Fitting
 
@@ -29,6 +29,51 @@ class Engine:
             'cut':[],
             'smooth':[]
         }
+        self.collect = Table()
+
+    def save_project(self,filename):
+        z = zipfile.ZipFile(filename, 'w' ,zipfile.ZIP_DEFLATED)
+        for (k,v) in self.datas.items():
+            z.writestr('data/'+k,json.dumps(v.serialize()))
+        z.writestr('selected',self.selected)
+        z.writestr('for_fitting',json.dumps(self.for_fitting))
+        z.writestr('params',json.dumps(self.params))
+        z.writestr('locked',json.dumps(self.locked))
+        z.writestr('scale_param',json.dumps(self.scale_param))
+        z.writestr('cut_range',json.dumps(self.cut_range))
+        z.writestr('pos_tag',json.dumps(self.pos_tag))
+        z.writestr('neg_tag',json.dumps(self.neg_tag))
+        self.collect.save_file()
+        z.writestr('collect',open(self.collect.filename,'rb').read())
+        z.close()
+
+    def read_project(self,filename):
+        z = zipfile.ZipFile(filename)
+        files = z.namelist()
+        self.datas.clear()
+        for file in files:
+            if re.match(r'^data\/',file):
+                self.datas[file.replace('data/','')] = DataSet(*json.loads(z.read(file)))
+        self.selected = z.read('selected').decode('utf-8')
+        self.for_fitting = json.loads(z.read('for_fitting'))
+        self.params = json.loads(z.read('params'))
+        self.locked = json.loads(z.read('locked'))
+        self.scale_param = json.loads(z.read('scale_param'))
+        self.cut_range = json.loads(z.read('cut_range'))
+        self.pos_tag = json.loads(z.read('pos_tag'))
+        self.neg_tag = json.loads(z.read('neg_tag'))
+        self.collect = Table(z.read('collect'))
+        z.close()
+        self.triggle('change')
+        self.triggle('select')
+        self.triggle('fitting')
+
+    def collect_params(self):
+        symbol = self.for_fitting[2]
+        if not symbol in self.datas:
+            return
+        storage = self.datas[symbol].x_max
+        self.collect.write_params([storage,symbol,self.params[0],self.params[1],self.params[2],self.params[3],self.cal_RMSD()])
 
     def set_skip_window(self,value):
         self.skip_window = value
@@ -160,16 +205,24 @@ class Engine:
             self.clear_datas(self.selected,True)
 
     def alias_data(self,name):
-        if not self.selected in self.datas:
+        selected = self.selected
+        if not selected in self.datas:
             return
-        data = self.datas[self.selected]
+        data = self.datas[selected]
         self.datas[name] = data
-        del self.datas[self.selected]
-        if re.match('|'.join(self.pos_tag),self.selected):
+        del self.datas[selected]
+        if re.match('|'.join(self.pos_tag),selected):
             self.pos_tag.append(name)
-        if re.match('|'.join(self.neg_tag),self.selected):
+        if re.match('|'.join(self.neg_tag),selected):
             self.neg_tag.append(name)
+        #修改已选中
+        if selected in self.for_fitting:
+            idx = self.for_fitting.index(selected)
+            self.for_fitting[idx] = name
+        self.selected = name
         self.triggle('change')
+        self.triggle('select')
+        self.triggle('fitting')
 
     def read_data(self,file,define):
         data = File(file).read_data()
@@ -255,8 +308,8 @@ class Engine:
             params = fittor.fit_leastsq().x
         elif self.fitting_method == 'dVdQ':
             params = fittor.diff_fit_leastsq().x
-        self.params = params
-        (w1,s1,w2,s2) = params
+        self.params = params.tolist()
+        (w1,s1,w2,s2) = self.params
         x_data = full.x_data
         pos_y = interpolate.interp1d(pos.x_data*w1-s1,pos.y_data, fill_value="extrapolate")(x_data)
         neg_y = interpolate.interp1d(neg.x_data*w2-s2,neg.y_data, fill_value="extrapolate")(x_data)
@@ -274,7 +327,7 @@ class Engine:
 
     def cal_RMSD(self):
         if self.for_fitting[0]=='' or self.for_fitting[1]=='' or self.for_fitting[2]=='':
-            return
+            return 0
         pos = self.datas[self.for_fitting[0]]()
         neg = self.datas[self.for_fitting[1]]()
         full = self.datas[self.for_fitting[2]]()

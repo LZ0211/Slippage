@@ -63,3 +63,6 @@ class DataSet:
 
     def modify_y(self,w,s):
         return DataSet(self.x_data,self.y_data*w-s)
+
+    def serialize(self):
+        return [self.x_data.tolist(),self.y_data.tolist()]

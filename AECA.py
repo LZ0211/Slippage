@@ -3,11 +3,9 @@
 import fix_qt_import_error
 import re,os,sys,random
 from Core import Engine,File,Smooth
-from PyQt5 import QtWidgets, uic, QtCore, QtGui
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
 import pyqtgraph as pg
+from PyQt5.QtWidgets import QMainWindow, QApplication, QInputDialog, QLineEdit, QMessageBox, QListWidgetItem, QFileDialog, QAction
+from PyQt5.QtCore import QSettings, Qt
 
 #mainWindowUI = "GUI.ui"
 
@@ -15,23 +13,30 @@ import pyqtgraph as pg
 
 from UI import Ui_MainWindow
 
-class Application(QtWidgets.QMainWindow, Ui_MainWindow):
+class Application(QMainWindow, Ui_MainWindow):
 
     def __init__(self):
         QMainWindow.__init__(self)
         Ui_MainWindow.__init__(self)
         super().__init__()
-
+        self.dirname = os.path.dirname(os.path.abspath(__file__))
         self.core = Engine()
-        self.settings=QSettings("setting.ini",QSettings.IniFormat)
+        self.settings=QSettings(os.path.join(self.dirname,"setting.ini"),QSettings.IniFormat)
         self.setupUi(self)
         self.initAction()
         self.show()
+        self.projectFile = None
+        if sys.argv.__len__() > 1:
+            self.loadProjectFile(sys.argv[-1])
 
+    #初始化绑定事件
     def initAction(self):
+        #菜单栏
         self.bindOpenAction()
+        self.bindSaveAction()
         self.bindToolsAction()
         self.bindEditAction()
+        self.bindDataAction()
         self.bindLanguageAction()
         #退出
         self.action_Exit.triggered.connect(QApplication.exit)
@@ -46,17 +51,31 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
         self.bindRadioAction()
         #添加平滑选项
         self.initSmoothOptions()
-        #添加数据列表
+        #绑定内核事件
         self.core.bind('change',self.updateList)
         self.core.bind('select',self.updateCutRange)
         self.core.bind('fitting',self.updateParam)
-        #选择
+        #数据选框
         self.bindDataListAction()
         #按钮
         self.bindButtonAction()
         self.initGraphView()
         #Help
-        self.action_Author_Email.triggered.connect(lambda :self.infomation('Please contact author: WangC7@ATLBattery.com'))
+        self.bindHelpAction()
+    
+    def loadProjectFile(self,file):
+        if not self.projectFile == None:
+            if os.path.abspath(file) == os.path.abspath(self.projectFile):
+                return
+            if self.warnning(self.translateText('Do you want to replace current project file?')) == QMessageBox.No:
+                return
+            if self.infomation(self.translateText('DO you need to save current project file?')) == QMessageBox.Yes:
+                self.core.save_project(self.projectFile)
+        try:
+            self.core.read_project(file)
+            self.projectFile = file
+        except:
+            self.critical(file + self.translateText(' is not an invalid AECA project file!'))
 
     def switchLanguage(self,language='English'):
         if self.language == language:
@@ -78,7 +97,7 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def bindLanguageAction(self):
         self.language = 'English'
-        language = self.settings.value('Display/language') or 'English'
+        language = self.defaultSetting('Display/language','English')
         self.switchLanguage(language)
         self.action_English.triggered.connect(lambda :self.switchLanguage('English'))
         self.action_Chinese_Simplified.triggered.connect(lambda :self.switchLanguage('Chinese Simplified'))
@@ -88,8 +107,15 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
         def rename():
             value, ok = QInputDialog.getText(self, self.translateText("Data Rename"), self.translateText("Please input new data name:"), QLineEdit.Normal, self.core.selected)
             if ok and value != '' and value != self.core.selected:
-                self.core.alias_data(value)
-        self.action_View.triggered.connect(self.checkSelectedBefore(self.viewData))
+                if re.match(r'(\:|\\|\/|\*|\?|\"|<|>|\|)',value):
+                    self.critical("Invalid file name!")
+                else:
+                    self.core.alias_data(value)
+        def viewData():
+            file = File.temp(str(self.core.datas[self.core.selected]))
+            os.popen("start notepad "+file)
+
+        self.action_View.triggered.connect(self.checkSelectedBefore(viewData))
         self.action_Swap.triggered.connect(self.checkSelectedBefore(self.core.invert_data))
         self.action_Rename.triggered.connect(self.checkSelectedBefore(rename))
         self.action_Delete.triggered.connect(self.checkSelectedBefore(self.core.remove_data))
@@ -104,16 +130,68 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
         self.action_TXT2CSV.triggered.connect(lambda :self.convertFile('Text File (*.txt)','CSV File (*.csv)'))
         self.action_TXT2Excel.triggered.connect(lambda :self.convertFile('Text File (*.txt)','Excel File (*.xls;*.xlsx)'))
 
+    def bindSaveAction(self):
+        def saveProject(override=True):
+            if self.projectFile == None or not override:
+                lastFilePath = self.defaultSetting("File/lastProjectFilePath",self.dirname)
+                extension = "AECA Project File (*.apf)"
+                (fileName,fileType) = QFileDialog.getSaveFileName(self,self.translateText('Save AECA Project File'),lastFilePath,extension,extension)
+                if fileName == '':
+                    return
+                fileName = fileName.replace('/','\\')
+                dirName = os.path.dirname(fileName)
+                self.settings.setValue('File/lastProjectFilePath',dirName)
+                self.projectFile = fileName
+            self.core.save_project(self.projectFile)
+            self.infomation(self.translateText('Save AECA project file successful!'))
+        self.action_Save.triggered.connect(lambda: saveProject(True))
+        self.action_Save_As.triggered.connect(lambda :saveProject(False))
+
     def bindOpenAction(self):
-        self.action_Positive_Reference.triggered.connect(self.loadPositiveRef)
-        self.action_Negative_Reference.triggered.connect(self.loadNegativeRef)
-        self.action_Measured_Data.triggered.connect(self.loadMeasuredData)
+        def loadPositiveRef():
+            define = self.defaultSetting('FileStructure/posDataStructure','Voltage:Capacity')
+            self.openDataFile(lambda f:self.core.read_pos_data(f,define))
+        def loadNegativeRef():
+            define = self.defaultSetting('FileStructure/negDataStructure','Voltage:Capacity')
+            self.openDataFile(lambda f:self.core.read_neg_data(f,define))
+        def loadMeasuredData():
+            define = self.defaultSetting('FileStructure/fullDataStructure','Voltage:Capacity')
+            self.openDataFile(lambda f:self.core.read_full_data(f,define))
+        self.action_Positive_Reference.triggered.connect(loadPositiveRef)
+        self.action_Negative_Reference.triggered.connect(loadNegativeRef)
+        self.action_Measured_Data.triggered.connect(loadMeasuredData)
 
     def bindSliderAction(self):
-        self.Pos_Scale_Slider.valueChanged.connect(lambda value:self.Pos_Scale_SpinBox.setSingleStep(0.1**value))
-        self.Pos_Shift_Slider.valueChanged.connect(lambda value:self.Pos_Shift_SpinBox.setSingleStep(0.1**value))
-        self.Neg_Scale_Slider.valueChanged.connect(lambda value:self.Neg_Scale_SpinBox.setSingleStep(0.1**value))
-        self.Neg_Shift_Slider.valueChanged.connect(lambda value:self.Neg_Shift_SpinBox.setSingleStep(0.1**value))
+        def modify_spinBox(box,value,name):
+            decimals = 4-value
+            box.setDecimals(decimals)
+            box.setSingleStep(0.1**decimals)
+            box.setMaximum(10**(5-decimals)-0.1**decimals)
+            self.settings.setValue(name,value)
+        self.Pos_Scale_Slider.valueChanged.connect(lambda value:modify_spinBox(self.Pos_Scale_SpinBox,value,'User/Pos_Scale'))
+        self.Pos_Shift_Slider.valueChanged.connect(lambda value:modify_spinBox(self.Pos_Shift_SpinBox,value,'User/Pos_Shift'))
+        self.Neg_Scale_Slider.valueChanged.connect(lambda value:modify_spinBox(self.Neg_Scale_SpinBox,value,'User/Neg_Scale'))
+        self.Neg_Shift_Slider.valueChanged.connect(lambda value:modify_spinBox(self.Neg_Shift_SpinBox,value,'User/Neg_Shift'))
+        self.Pos_Scale_Slider.setValue(int(self.defaultSetting('User/Pos_Scale',2)))
+        self.Pos_Shift_Slider.setValue(int(self.defaultSetting('User/Pos_Shift',2)))
+        self.Neg_Scale_Slider.setValue(int(self.defaultSetting('User/Neg_Scale',2)))
+        self.Neg_Shift_Slider.setValue(int(self.defaultSetting('User/Neg_Shift',2)))
+        
+    def bindDataAction(self):
+        def exportExcel():
+            lastFilePath = self.defaultSetting("File/CollectFilePath",self.dirname)
+            extension = "Excel File (*.xlsx)"
+            (fileName,fileType) = QFileDialog.getSaveFileName(self,self.translateText('Save statistic data file'),lastFilePath,extension,extension)
+            if fileName == '':
+                return
+            fileName = fileName.replace('/','\\')
+            dirName = os.path.dirname(fileName)
+            self.settings.setValue('File/CollectFilePath',dirName)
+            self.core.collect.export_file(fileName)
+            self.infomation(self.translateText('Export statistic data file successful!'))
+        self.action_Data_Write.triggered.connect(self.core.collect_params)
+        self.action_Data_Export.triggered.connect(exportExcel)
+        self.action_Data_View.triggered.connect(lambda :self.core.collect.view_file())
 
     def bindSpinBoxAction(self):
         self.Pos_Scale_SpinBox.valueChanged.connect(lambda value:self.core.set_param(value,0))
@@ -176,6 +254,10 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
         self.Fitting_Button.clicked.connect(self.tryRun(self.core.fit_data))
         self.Scale_Button.clicked.connect(self.tryRun(self.core.scale_data))
 
+    def bindHelpAction(self):
+        self.action_UserGuide.triggered.connect(lambda :os.popen("start "+os.path.join(self.dirname,'UserGuide.pdf')))
+        self.action_Author_Email.triggered.connect(lambda :self.infomation(self.translateText('Please contact author: WangC7@ATLBattery.com')))
+
     def initSmoothOptions(self):
         self.Methods_List.clear()
         options = ['Simple','Median','Savitzky_Golay','Gaussian','Spline']
@@ -232,16 +314,19 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
         self.Smooth_Param.setValue(3)
 
     def infomation(self,text):
-        QMessageBox.information(self,self.translateText("Information"),text,QMessageBox.Yes)
+        return QMessageBox.information(self,self.translateText("Information"),text,QMessageBox.Yes | QMessageBox.No)
         
     def critical(self,text):
-        QMessageBox.critical(self,self.translateText("Critical"),text,QMessageBox.Yes)
+        return QMessageBox.critical(self,self.translateText("Critical"),text,QMessageBox.Yes | QMessageBox.No)
+
+    def warnning(self,text):
+        return QMessageBox.warning(self,self.translateText("Warning"),text,QMessageBox.Yes | QMessageBox.No)
 
     def updateRecentFiles(self):
         self.menu_Recent_Files.clear()
-        recentFiles = self.settings.value('File/recentFiles') or []
+        recentFiles = self.defaultSetting('File/recentFiles',[])
         for fname in recentFiles:
-            action =QAction(fname,self,triggered=self.loadMeasuredData)
+            action =QAction(fname,self,triggered=lambda:self.core.read_full_data(fname))
             action.setData(fname)
             self.menu_Recent_Files.addAction(action)
 
@@ -261,15 +346,11 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.critical(self.translateText(str(identifier)))
         return func
 
-    def viewData(self):
-        file = File.temp(str(self.core.datas[self.core.selected]))
-        os.system("notepad "+file)
-
     def exportData(self):
-        lastFilePath = self.settings.value("File/lastFilePath") or './'
+        lastFilePath = self.defaultSetting("File/lastFilePath",self.dirname)
         defaultExtension = "Text File (*.txt)"
         extensions = "Text File (*.txt);;CSV File (*.csv);;Excel File (*.xls;*.xlsx)"
-        (fileName,fileType) = QtWidgets.QFileDialog.getSaveFileName(self,self.translateText("Save File"),lastFilePath,extensions,defaultExtension)
+        (fileName,fileType) = QFileDialog.getSaveFileName(self,self.translateText("Save File"),lastFilePath,extensions,defaultExtension)
         if fileName == '':
             return
         File(fileName).write_data(str(self.core.datas[self.core.selected]))
@@ -380,7 +461,7 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
         legand = self.legand
         for x in self.curveList:
             legand.removeItem(x)
-        curveType = self.settings.value('Curve/type') or 'line'
+        curveType = self.defaultSetting('Curve/type','line')
         if curveType == 'scatter':
             self.drawScatterCurve(txts)
         else:
@@ -389,8 +470,8 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
         self.curveList = txts
 
     def drawLineCurve(self,texts):
-        width = int(self.settings.value('Curve/width') or 3)
-        colors = self.settings.value('Curve/colors') or []
+        width = int(self.defaultSetting('Curve/width',3))
+        colors = self.defaultSetting('Curve/colors',[])
         idx = 0
         length = len(colors)
         for text in texts:
@@ -403,9 +484,9 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
             idx += 1
 
     def drawScatterCurve(self,texts):
-        size = int(self.settings.value('Curve/size') or 5)
-        colors = self.settings.value('Curve/colors') or []
-        symbols = self.settings.value('Curve/symbols') or []
+        size = int(self.defaultSetting('Curve/size',5))
+        colors = self.defaultSetting('Curve/colors',[])
+        symbols = self.defaultSetting('Curve/symbols',[])
         idx = 0
         colors_length = len(colors)
         symbols_length = len(symbols)
@@ -421,24 +502,12 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
             self.plot.plot(*self.core.datas[text](),pen=color,symbolBrush=color, symbolPen=color, symbol=symbol, symbolSize=size, name=text)
             idx += 1
 
-    def loadPositiveRef(self):
-        define = self.settings.value('FileStructure/posDataStructure') or self.settings.value('FileStructure/dataStructure') or 'Voltage:Capacity'
-        self.openDataFile(lambda f:self.core.read_pos_data(f,define))
-
-    def loadNegativeRef(self):
-        define = self.settings.value('FileStructure/negDataStructure') or self.settings.value('FileStructure/dataStructure') or 'Voltage:Capacity'
-        self.openDataFile(lambda f:self.core.read_neg_data(f,define))
-
-    def loadMeasuredData(self):
-        define = self.settings.value('FileStructure/fullDataStructure') or self.settings.value('FileStructure/dataStructure') or 'Voltage:Capacity'
-        self.openDataFile(lambda f:self.core.read_full_data(f,define))
-
     def openDataFile(self,fn):
-        lastFilePath = self.settings.value("File/lastFilePath") or './'
-        recentFiles = self.settings.value('File/recentFiles') or []
-        defaultExtension = self.settings.value('FileStructure/defaultExtension') or "Text File (*.txt)"
+        lastFilePath = self.defaultSetting("File/lastFilePath",self.dirname)
+        recentFiles = self.defaultSetting("File/recentFiles",[])
+        defaultExtension = self.defaultSetting("FileStructure/defaultExtension","Text File (*.txt)")
         extensions = "Text File (*.txt);;CSV File (*.csv);;Excel File (*.xls;*.xlsx)"
-        (fileName,fileType) = QtWidgets.QFileDialog.getOpenFileName(self,self.translateText('Please select a data file'),lastFilePath,extensions,defaultExtension)
+        (fileName,fileType) =QFileDialog.getOpenFileName(self,self.translateText('Please select a data file'),lastFilePath,extensions,defaultExtension)
         if fileName == '':
             return
         fileName = fileName.replace('/','\\')
@@ -457,8 +526,8 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
             self.critical(self.translateText('Invalid Data File!'))
 
     def convertFile(self,old,new):
-        lastFilePath = self.settings.value("File/lastFilePath") or './'
-        (fileName,fileType) = QtWidgets.QFileDialog.getOpenFileName(self,self.translateText('Please select a data file'),lastFilePath,old,old)
+        lastFilePath = self.defaultSetting("File/lastFilePath",self.dirname)
+        (fileName,fileType) = QFileDialog.getOpenFileName(self,self.translateText('Please select a data file'),lastFilePath,old,old)
         if fileName == '':
             return
         fileName = fileName.replace('/','\\')
@@ -470,11 +539,27 @@ class Application(QtWidgets.QMainWindow, Ui_MainWindow):
         except:
             self.critical(self.translateText('A error occur, please contact author for help!'))
             return
-        (fileName,fileType) = QtWidgets.QFileDialog.getSaveFileName(self,"Save File",dirName,new,new)
+        (fileName,fileType) = QFileDialog.getSaveFileName(self,"Save File",dirName,new,new)
         if fileName == '':
             return
         file.save_as(fileName)
 
+    def defaultSetting(self,key,default):
+        value = self.settings.value(key)
+        if value == None:
+            self.settings.setValue(key,default)
+            self.settings.sync()
+            return default
+        return value
+
+    def dragEnterEvent(self,e):
+        if e.mimeData().text().split('.')[-1].lower() == 'apf':
+            e.accept()
+        else:
+            e.ignore() 
+
+    def dropEvent(self,e):
+        self.loadProjectFile(e.mimeData().text().replace('file:///',''))
 
 
 if __name__ == '__main__':
