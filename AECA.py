@@ -392,10 +392,10 @@ class Application(QMainWindow, Ui_MainWindow):
             else:
                 item.setCheckState(Qt.Unchecked)
             self.listWidget.addItem(item)
-            if re.match('|'.join(self.core.pos_tag),k):
+            if len(self.core.pos_tag)>0 and re.match('|'.join(self.core.pos_tag),k):
                 self.Pos_List.addItem(k)
                 continue
-            if re.match('|'.join(self.core.neg_tag),k):
+            if len(self.core.neg_tag)>0 and re.match('|'.join(self.core.neg_tag),k):
                 self.Neg_List.addItem(k)
                 continue
             self.Full_List.addItem(k)
@@ -515,15 +515,15 @@ class Application(QMainWindow, Ui_MainWindow):
         self.settings.setValue('File/lastFilePath',dirName)
         try:
             fn(fileName)
-            if not fileName in recentFiles:
-                recentFiles.append(fileName)
-            if len(recentFiles) > 10:
-                recentFiles.pop(0)
-            self.settings.setValue('File/recentFiles',recentFiles)
-            self.settings.sync()
         except Exception as identify:
             print(identify)
             self.critical(self.translateText('Invalid Data File!'))
+        if not fileName in recentFiles:
+            recentFiles.append(fileName)
+        if len(recentFiles) > 10:
+            recentFiles.pop(0)
+        self.settings.setValue('File/recentFiles',recentFiles)
+        self.settings.sync()
 
     def convertFile(self,old,new):
         lastFilePath = self.defaultSetting("File/lastFilePath",self.dirname)
@@ -546,7 +546,7 @@ class Application(QMainWindow, Ui_MainWindow):
 
     def defaultSetting(self,key,default):
         value = self.settings.value(key)
-        if value == None:
+        if value == None or value == '':
             self.settings.setValue(key,default)
             self.settings.sync()
             return default
