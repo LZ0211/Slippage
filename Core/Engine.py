@@ -28,7 +28,7 @@ class Engine:
         self.for_fitting = ['','','']
         self.for_display = []
         self.params = [1,0,1,0,0,0]
-        self.params_max = [1E2,1E2,1E2,1E2,1E2,1E2]
+        self.params_max = [1E3,1E3,1E3,1E3,1E3,1E3]
         self.locked = [False,False,False,False,False,False]
         self.scale_param = [1,0]
         self.skip_window = 1
@@ -46,8 +46,8 @@ class Engine:
         self.suffix_cut = '_C'
         self.suffix_invert = '_I'
         self.suffix_skip = '_S'
-        self.suffix_fitting = '_F'
-        self.suffix_scale = '_N'
+        self.suffix_scaledVdQ = '_F'
+        self.suffix_scaleVQ = '_N'
         self.suffix_gen = '_G'
 
         self.events = {
@@ -170,28 +170,40 @@ class Engine:
                 self.params[0] = value
                 self.params[1] = X - X_max - self.params[4]
                 #self.params[4] = 0
+            else:
+                self.params[0] = X_max / pos_max
+                self.params[1] = 0
+                self.params[4] = 0
         if idx == 1:
             scale = self.params[0]
             X = pos_max * scale
             rs = X-X_max-value
             if rs >= self.params_max[4]:
-                self.params[4] = self.params_max[4]
-                self.params[1] = value
-                self.params[0] = (X_max + self.params[1] + self.params[4]) /  pos_max
+                #self.params[4] = self.params_max[4]
+                #self.params[1] = value
+                #self.params[0] = (X_max + self.params[1] + self.params[4]) /  pos_max
+                return
             elif rs >= 0:
                 self.params[4] = rs
                 self.params[1] = value
+            else:
+                self.params[4] = 0
+                self.params[1] = X-X_max
         if idx == 4:
             scale = self.params[0]
             X = pos_max * scale
             ls = X-X_max-value
             if ls >= self.params_max[1]:
-                self.params[4] = value
-                self.params[1] = self.params_max[1]
-                self.params[0] = (X_max + self.params[1] + self.params[4]) /  pos_max
+                #self.params[4] = value
+                #self.params[1] = self.params_max[1]
+                #self.params[0] = (X_max + self.params[1] + self.params[4]) /  pos_max
+                return
             elif ls >= 0:
                 self.params[4] = value
                 self.params[1] = ls
+            else:
+                self.params[4] = X-X_max
+                self.params[1] = 0
         if idx == 2:
             X = neg_max * value
             if X >= X_max + self.params_max[3] + self.params_max[5]:
@@ -206,28 +218,40 @@ class Engine:
                 self.params[2] = value
                 self.params[3] = X - X_max - self.params[5]
                 #self.params[5] = 0
+            else:
+                self.params[2] = X_max / neg_max
+                self.params[3] = 0
+                self.params[5] = 0
         if idx == 3:
             scale = self.params[2]
             X = neg_max * scale
             rs = X-X_max-value
             if rs >= self.params_max[5]:
-                self.params[5] = self.params_max[5]
-                self.params[3] = value
-                self.params[2] = (X_max + self.params[3] + self.params[5]) /  neg_max
+                #self.params[5] = self.params_max[5]
+                #self.params[3] = value
+                #self.params[2] = (X_max + self.params[3] + self.params[5]) /  neg_max
+                return
             elif rs >= 0:
                 self.params[5] = rs
                 self.params[3] = value
+            else:
+                self.params[5] = 0
+                self.params[3] = X-X_max
         if idx == 5:
             scale = self.params[2]
             X = neg_max * scale
             ls = X-X_max-value
             if ls >= self.params_max[3]:
-                self.params[5] = value
-                self.params[3] = self.params_max[3]
-                self.params[2] = (X_max + self.params[3] + self.params[5]) /  neg_max
+                #self.params[5] = value
+                #self.params[3] = self.params_max[3]
+                #self.params[2] = (X_max + self.params[3] + self.params[5]) /  neg_max
+                return
             elif ls >= 0:
                 self.params[5] = value
                 self.params[3] = ls
+            else:
+                self.params[5] = X-X_max
+                self.params[3] = 0
 
     def set_param(self,value,idx):
         self.auto_cal_param(value,idx)
@@ -512,7 +536,7 @@ class Engine:
         self.auto_cal_param(full.x_max - w1 * pos.x_max - s1,4)
         self.auto_cal_param(full.x_max - w2 * pos.x_max - s2,5)
         self.triggle('fitting')
-        self.auto_scale and self.scale_data(self.suffix_fitting)
+        self.auto_scale and self.scale_data()
         return params
 
     def cal_RMSD(self):
@@ -536,7 +560,7 @@ class Engine:
             sub = pos_y/w1-neg_y/w2-y_data
         return math.sqrt(np.sum(sub*sub)/x_data.size)
 
-    def scale_data(self,suffix=None):
+    def scale_data(self):
         #模式2
         if self.auto_cal and self.max_capacity > 0:
             suffix = self.suffix_gen
@@ -562,29 +586,25 @@ class Engine:
         #模式1
         if self.count_fit_data() < 7:
             return
-        if suffix == None:
-            suffix = self.suffix_scale
         pos_name,neg_name,full_name = self.for_fitting
         pos = self.datas[pos_name]
-        if self.fitting_method == 'VQ':
-            pos = pos.modify_x(*self.params[0:2])
-        else:
-            pos = pos.modify_x(*self.params[0:2]).modify_y(1/self.params[0],0)
-        self.datas[pos_name+suffix] = pos
-        
         neg = self.datas[neg_name]
+        full = self.datas[full_name]
         if self.fitting_method == 'VQ':
+            suffix = self.suffix_scaleVQ
+            pos = pos.modify_x(*self.params[0:2])
             neg = neg.modify_x(*self.params[2:4])
         else:
+            suffix = self.suffix_scaledVdQ
+            pos = pos.modify_x(*self.params[0:2]).modify_y(1/self.params[0],0)
             neg = neg.modify_x(*self.params[2:4]).modify_y(1/self.params[2],0)
-        self.datas[neg_name+suffix] = neg
-
-        full = self.datas[full_name]
         x_data,y_data = full()
         pos_y = interp1d(*pos(), fill_value="extrapolate")(x_data)
         neg_y = interp1d(*neg(), fill_value="extrapolate")(x_data)
-        self.datas[full_name+suffix] = DataSet(x_data,pos_y-neg_y)
-        self.for_display = [pos_name+suffix,neg_name+suffix,full_name+suffix,full_name]
+        self.datas[pos_name + suffix] = pos
+        self.datas[neg_name + suffix] = neg
+        self.datas[full_name + suffix] = DataSet(x_data,pos_y-neg_y)
+        self.for_display = [pos_name + suffix, neg_name + suffix, full_name + suffix, full_name]
         self.triggle('change')
 
     def display_all(self):

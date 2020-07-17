@@ -444,8 +444,8 @@ class Preference(QWidget):
         SuffixSmooth = QLineEdit()
         SuffixInvert = QLineEdit()
         SuffixSkip = QLineEdit()
-        SuffixFitting = QLineEdit()
-        SuffixScale = QLineEdit()
+        SuffixScale1 = QLineEdit()
+        SuffixScale2 = QLineEdit()
         SuffixGen = QLineEdit()
         #创建UI
         layout.addRow(QLabel(self.translate('Auto Guess')),AutoGuess)
@@ -457,8 +457,8 @@ class Preference(QWidget):
         layout.addRow(QLabel(self.translate('Smooth Suffix')),SuffixSmooth)
         layout.addRow(QLabel(self.translate('Invert Suffix')),SuffixInvert)
         layout.addRow(QLabel(self.translate('Skip Suffix')),SuffixSkip)
-        layout.addRow(QLabel(self.translate('Fitting Suffix')),SuffixFitting)
-        layout.addRow(QLabel(self.translate('Scale Suffix')),SuffixScale)
+        layout.addRow(QLabel(self.translate('dVdQ Scale Suffix')),SuffixScale1)
+        layout.addRow(QLabel(self.translate('VQ Scale Suffix')),SuffixScale2)
         layout.addRow(QLabel(self.translate('Gen Suffix')),SuffixGen)
         self.stack4.setLayout(layout)
         #初始化
@@ -470,8 +470,8 @@ class Preference(QWidget):
         SuffixSmooth.setText(self.defaultSetting('Core/SuffixSmooth','_M'))
         SuffixInvert.setText(self.defaultSetting('Core/SuffixInvert','_I'))
         SuffixSkip.setText(self.defaultSetting('Core/SuffixSkip','_S'))
-        SuffixFitting.setText(self.defaultSetting('Core/SuffixFitting','_F'))
-        SuffixScale.setText(self.defaultSetting('Core/SuffixScale','_N'))
+        SuffixScale1.setText(self.defaultSetting('Core/SuffixScale1','_F'))
+        SuffixScale2.setText(self.defaultSetting('Core/SuffixScale2','_N'))
         SuffixGen.setText(self.defaultSetting('Core/SuffixGen','_G'))
         #绑定事件
         def hotfix(key):
@@ -496,8 +496,8 @@ class Preference(QWidget):
         SuffixSmooth.textChanged.connect(hotfix('SuffixSmooth'))
         SuffixInvert.textChanged.connect(hotfix('SuffixInvert'))
         SuffixSkip.textChanged.connect(hotfix('SuffixSkip'))
-        SuffixFitting.textChanged.connect(hotfix('SuffixFitting'))
-        SuffixScale.textChanged.connect(hotfix('SuffixScale'))
+        SuffixScale1.textChanged.connect(hotfix('SuffixScale1'))
+        SuffixScale2.textChanged.connect(hotfix('SuffixScale2'))
         SuffixGen.textChanged.connect(hotfix('SuffixGen'))
 
     def display(self,index):

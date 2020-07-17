@@ -196,10 +196,11 @@ class Application(QMainWindow, Ui_MainWindow):
             box = boxs[idx]
             key = keys[idx]
             def func(value):
+                #print(value)
                 #调节spinbox上下限和步长
-                decimals = 4-value
-                maximum = 10**(5-decimals)
-                box.setSingleStep(0.1**decimals)
+                decimals = 4 - value
+                maximum = 10 ** (1 + value)
+                box.setSingleStep(0.1 ** decimals)
                 box.setMaximum(maximum)
                 #保存配置
                 self.settings.setValue('User/'+key,value)
@@ -394,8 +395,8 @@ class Application(QMainWindow, Ui_MainWindow):
         self.core.suffix_smooth = self.defaultSetting('Core/SuffixSmooth','_M')
         self.core.suffix_invert = self.defaultSetting('Core/SuffixInvert','_I')
         self.core.suffix_skip = self.defaultSetting('Core/SuffixSkip','_S')
-        self.core.suffix_fitting = self.defaultSetting('Core/SuffixFitting','_F')
-        self.core.suffix_scale = self.defaultSetting('Core/SuffixScale','_N')
+        self.core.suffix_scaledVdQ = self.defaultSetting('Core/SuffixScale1','_F')
+        self.core.suffix_scaleVQ = self.defaultSetting('Core/SuffixScale2','_N')
         self.core.suffix_gen = self.defaultSetting('Core/SuffixGen','_G')
 
     def initSmoothOptions(self):
