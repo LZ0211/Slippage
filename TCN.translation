@@ -118,8 +118,8 @@
         "Smooth Suffix":"平滑數據後綴",
         "Invert Suffix":"轉置數據後綴",
         "Skip Suffix":"采點數據後綴",
-        "Fitting Suffix":"擬合數據後綴",
-        "Scale Suffix":"縮放數據後綴",
+        "dVdQ Scale Suffix":"dVdQ縮放數據後綴",
+        "VQ Scale Suffix":"VQ縮放數據後綴",
         "Gen Suffix":"生成數據後綴",
         "Apply":"應用"
 }

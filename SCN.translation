@@ -118,8 +118,8 @@
         "Smooth Suffix":"平滑数据后缀",
         "Invert Suffix":"转置数据后缀",
         "Skip Suffix":"采点数据后缀",
-        "Fitting Suffix":"拟合数据后缀",
-        "Scale Suffix":"缩放数据后缀",
+        "dVdQ Scale Suffix":"dVdQ缩放数据后缀",
+        "VQ Scale Suffix":"VQ缩放数据后缀",
         "Gen Suffix":"生成数据后缀",
         "Apply":"应用"
 }
