@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-=======
-#!/usr/bin/env python3
->>>>>>> 4860c7558cb142ab3539b1130094087c3aeb5fab
 # coding=utf-8
 import fix_qt_import_error
 import re,os,sys,random,traceback

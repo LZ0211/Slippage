@@ -357,7 +357,11 @@ class Engine:
                 self.for_fitting[idx] = ''
             if text in self.for_display:
                 idx = self.for_display.index(text)
-                self.for_display.pop(idx)       
+                self.for_display.pop(idx)
+            if text in self.pos_tag:
+                self.pos_tag.pop(self.pos_tag.index(text))
+            if text in self.neg_tag:
+                self.neg_tag.pop(self.neg_tag.index(text))
         if not self.selected in self.datas:
             self.selected = ''
         return changed
