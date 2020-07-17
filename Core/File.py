@@ -1,6 +1,12 @@
-#!/usr/bin/env python
 # coding=utf-8
-import os,re,xlrd,xlwt,openpyxl,codecs,chardet,tempfile,uuid
+import os,re
+from uuid import uuid4 as uuid
+from tempfile import mktemp
+from chardet import detect
+from xlrd import open_workbook
+from xlwt import Workbook as xls_Workbook
+from openpyxl import load_workbook
+from openpyxl import Workbook as xlsx_Workbook
 from openpyxl.styles import PatternFill, Border, Side, Alignment, Protection, Font
 from openpyxl.chart import LineChart,Reference
 from openpyxl.chart.axis import DateAxis
@@ -9,8 +15,9 @@ from openpyxl.drawing.line import LineProperties
 
 class File:
     @staticmethod
-    def temp(data):
-        file = tempfile.mktemp()
+    def temp(data,file=None):
+        if file == None:
+            file = mktemp()
         open(file,'w+').write(data)
         return file
 
@@ -30,7 +37,7 @@ class File:
     def detectCode(self,path):
 	    with open(path, 'rb') as file:
 		    data = file.read(200000)
-		    dicts = chardet.detect(data)
+		    dicts = detect(data)
 	    return dicts["encoding"]
 
     def read_data(self):
@@ -41,7 +48,7 @@ class File:
         elif self.filetype == '.xls':
             self.data = self.read_xls_file(self.file)
         elif self.filetype == '.xlsx':
-            self.data = self.read_xlsx_file(self.file)
+            self.data = self.read_xls_file(self.file)
         else:
             raise Exception(self.file + ' is invalid data file!')
         #过滤空白行
@@ -83,7 +90,7 @@ class File:
         return list(points)
 
     def read_xls_file(self,filename):
-        wb = xlrd.open_workbook(filename)
+        wb = open_workbook(filename)
         ws = wb.sheet_by_index(0)
         points = []
         for i in range(1,ws.nrows):
@@ -95,7 +102,7 @@ class File:
         return points
 
     def read_xlsx_file(self,filename):
-        wb = openpyxl.load_workbook(filename)
+        wb = load_workbook(filename)
         ws = wb.get_sheet_by_name(wb.sheetnames[0])
         points = []
         for i in range(1,ws.max_row):
@@ -113,7 +120,7 @@ class File:
         open(filename,'w+').write('\n'.join(map(lambda x:','.join(map(str,x)),data)))
 
     def write_xls_file(self,filename,data):
-        wb = xlwt.Workbook(encoding="utf-8")
+        wb = xls_Workbook(encoding="utf-8")
         ws = wb.add_sheet('Sheet1', cell_overwrite_ok=True)
         for i in range(len(data)):
             line = data[i]
@@ -122,7 +129,7 @@ class File:
         wb.save(filename)
 
     def write_xlsx_file(self,filename,data):
-        wb = openpyxl.Workbook()
+        wb = xlsx_Workbook()
         ws = wb.active
         for i in range(len(data)):
             line = data[i]
@@ -132,20 +139,22 @@ class File:
 
 
 class Table:
-    def __init__(self,stream=None):
-        self.filename = tempfile.mktemp() + '.xlsx'
+    def __init__(self,stream=None,filename=None):
+        self.filename = filename
+        if filename == None:
+            self.filename = mktemp() + '.xlsx'
         if stream == None:
-            self.workbook =  openpyxl.Workbook()
+            self.workbook =  xlsx_Workbook()
             self.worksheet = self.workbook.active
             self.worksheet.title = '汇总'
-            self.worksheet.protection.password = str(uuid.uuid4())
+            self.worksheet.protection.password = str(uuid())
             self.rows = 1
             self.init_tab_header()
         else:
             open(self.filename,'wb+').write(stream)
-            self.workbook = openpyxl.load_workbook(self.filename)
+            self.workbook = load_workbook(self.filename)
             self.worksheet = self.workbook.get_sheet_by_name(self.workbook.sheetnames[0])
-            self.worksheet.protection.password = str(uuid.uuid4())
+            self.worksheet.protection.password = str(uuid())
             self.rows = self.worksheet.max_row + 1
 
 
@@ -282,9 +291,9 @@ class Table:
         self.save_file()
         new_tab = Table(open(self.filename,'rb').read())
         new_tab.insert_graph()
-        new_tab.workbook.security.workbookPassword = str(uuid.uuid4())
+        new_tab.workbook.security.workbookPassword = str(uuid())
         new_tab.workbook.security.lockStructure = True
-        new_tab.worksheet.protection.password = str(uuid.uuid4())
+        new_tab.worksheet.protection.password = str(uuid())
         new_tab.worksheet.protect = True
         new_tab.worksheet.protection.enable()
         new_tab.save_file()

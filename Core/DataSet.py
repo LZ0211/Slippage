@@ -1,22 +1,19 @@
-#!/usr/bin/env python
 # coding=utf-8
 import numpy as np
-import math
-from scipy import interpolate
 
 class DataSet:
     #数据点升序排列并删除异常波动点
     def __init__(self,x_data,y_data):
-        #self.origin_data = [x_data,y_data]
-        #二维数据转置
-        matrix = np.array([x_data,y_data]).T
-        #print(self.matrix)
+        #保留小数点后6位
+        x_data = np.around(x_data, decimals=6)
+        y_data = np.around(y_data, decimals=6)
         #删除重复的点
-        matrix = np.unique(matrix,axis=0)
+        x_data,idx = np.unique(x_data,return_index=True)
+        y_data = y_data[idx]
         #排序
-        matrix = matrix[matrix[:,0].argsort()]
-        x_data = matrix[:,0]
-        y_data = matrix[:,1]
+        idx = np.argsort(x_data)
+        x_data = x_data[idx]
+        y_data = y_data[idx]
         self.x_data = x_data
         self.y_data = y_data
         self.x_min = np.min(x_data)
