@@ -117,15 +117,20 @@ class Application(QMainWindow, Ui_MainWindow):
                 else:
                     self.core.alias_data(value)
         def viewData():
-            file = File.temp(str(self.core.datas[self.core.selected]),'temp.txt')
+            tempdir = self.defaultSetting('UI/TempDirectory','')
+            if tempdir == '':
+                tempfile = None
+            else:
+                tempfile = os.path.join(tempdir,'temp.txt')
+            file = File.temp(str(self.core.datas[self.core.selected]),tempfile)
             os.popen("start notepad "+file)
 
         self.action_View.triggered.connect(self.checkSelectedBefore(viewData))
         self.action_Swap.triggered.connect(self.checkSelectedBefore(self.core.invert_data))
         self.action_Rename.triggered.connect(self.checkSelectedBefore(rename))
-        self.action_Delete.triggered.connect(self.checkSelectedBefore(self.core.remove_data))
+        self.action_Delete.triggered.connect(lambda :self.alertBeforeDelete(self.checkSelectedBefore(self.core.remove_data)))
         self.action_Export.triggered.connect(self.checkSelectedBefore(self.exportData))
-        self.action_Delete_All.triggered.connect(self.checkSelectedBefore(lambda:self.core.remove_data(True)))
+        self.action_Delete_All.triggered.connect(lambda :self.alertBeforeDelete(self.checkSelectedBefore(self.core.batch_remove_data)))
 
     def bindToolsAction(self):
         self.action_Excel2TXT.triggered.connect(lambda :self.convertFile('Excel File (*.xls;*.xlsx)','Text File (*.txt)'))
@@ -148,7 +153,7 @@ class Application(QMainWindow, Ui_MainWindow):
                 self.settings.setValue('File/lastProjectFilePath',dirName)
                 self.projectFile = fileName
             self.core.save_project(self.projectFile)
-            self.infomation(self.translateText('Save AECA project file successful!'))
+            self.infomation('Save AECA project file successful!')
         def openProject():
             lastFilePath = self.defaultSetting("File/lastProjectFilePath",self.dirname)
             extension = "AECA Project File (*.apf)"
@@ -159,7 +164,7 @@ class Application(QMainWindow, Ui_MainWindow):
             self.loadProjectFile(fileName)
         def newProject():
             if not self.projectFile == None:
-                if self.prompt(self.translateText('DO you need to save current project file?')) == QMessageBox.Yes:
+                if self.prompt('DO you need to save current project file?') == QMessageBox.Yes:
                     self.core.save_project(self.projectFile)
             self.core.new_project()
 
@@ -233,7 +238,7 @@ class Application(QMainWindow, Ui_MainWindow):
             dirName = os.path.dirname(fileName)
             self.settings.setValue('File/CollectFilePath',dirName)
             self.core.collect.export_file(fileName)
-            self.infomation(self.translateText('Export statistic data file successful!'))
+            self.infomation('Export statistic data file successful!')
         self.action_Data_Write.triggered.connect(self.core.collect_params)
         self.action_Data_Export.triggered.connect(exportExcel)
         self.action_Data_View.triggered.connect(lambda :self.core.collect.view_file())
@@ -321,7 +326,7 @@ class Application(QMainWindow, Ui_MainWindow):
         self.list_action_rename.triggered.connect(self.action_Rename.trigger)
         self.list_action_view.triggered.connect(self.action_View.trigger)
         self.list_action_export.triggered.connect(self.action_Export.trigger)
-        self.list_action_delall.triggered.connect(lambda:self.core.clear_datas(list(map(lambda x:x.text(),self.listWidget.selectedItems()))))
+        self.list_action_delall.triggered.connect(lambda :self.alertBeforeDelete(lambda:self.core.clear_datas(list(map(lambda x:x.text(),self.listWidget.selectedItems())))))
         self.list_action_display.triggered.connect(self.core.display_all)
         self.list_action_undisplay.triggered.connect(self.core.undisplay_all)
         
@@ -351,7 +356,7 @@ class Application(QMainWindow, Ui_MainWindow):
 
     def bindHelpAction(self):
         self.action_UserGuide.triggered.connect(lambda :os.popen("start "+os.path.join(self.dirname,'UserGuide.pdf')))
-        self.action_Author_Email.triggered.connect(lambda :self.infomation(self.translateText('Please contact author: WangC7@ATLBattery.com')))
+        self.action_Author_Email.triggered.connect(lambda :self.infomation('Please contact author: WangC7@ATLBattery.com'))
 
     def initCoreFunction(self):
         self.core.auto_scale = int(self.defaultSetting('Core/AutoScale',0)) > 0
@@ -373,6 +378,9 @@ class Application(QMainWindow, Ui_MainWindow):
             self.Fitting_Button.setEnabled(True)
             self.Full_List.setCurrentIndex(0)
             self.Full_List.setEnabled(True)
+            self.action_Data_Write.setEnabled(True)
+            self.action_Data_View.setEnabled(True)
+            self.action_Data_Export.setEnabled(True)
         else:
             self.Pos_Shift2_Label.setEnabled(True)
             self.Pos_Shift2_Slider.setEnabled(True)
@@ -389,6 +397,9 @@ class Application(QMainWindow, Ui_MainWindow):
             self.Fitting_Button.setDisabled(True)
             self.Full_List.setCurrentText('')
             self.Full_List.setDisabled(True)
+            self.action_Data_Write.setDisabled(True)
+            self.action_Data_View.setDisabled(True)
+            self.action_Data_Export.setDisabled(True)
 
         self.core.suffix_cut = self.defaultSetting('Core/SuffixCut','_C')
         self.core.suffix_diff = self.defaultSetting('Core/SuffixDiff','_D')
@@ -456,20 +467,20 @@ class Application(QMainWindow, Ui_MainWindow):
 
     def prompt(self,text,msg='information'):
         if msg == 'critical':
-            return QMessageBox.critical(self,self.translateText("Critical"),text,QMessageBox.Yes | QMessageBox.No)
+            return QMessageBox.critical(self,self.translateText("Critical"),self.translateText(text),QMessageBox.Yes | QMessageBox.No)
         elif msg == 'warnning':
-            return QMessageBox.warning(self,self.translateText("Warning"),text,QMessageBox.Yes | QMessageBox.No)
+            return QMessageBox.warning(self,self.translateText("Warning"),self.translateText(text),QMessageBox.Yes | QMessageBox.No)
         else:
-            return QMessageBox.information(self,self.translateText("Information"),text,QMessageBox.Yes | QMessageBox.No)
+            return QMessageBox.information(self,self.translateText("Information"),self.translateText(text),QMessageBox.Yes | QMessageBox.No)
 
     def infomation(self,text):
-        return QMessageBox.information(self,self.translateText("Information"),text,QMessageBox.Yes)
+        return QMessageBox.information(self,self.translateText("Information"),self.translateText(text),QMessageBox.Yes)
         
     def critical(self,text):
-        return QMessageBox.critical(self,self.translateText("Critical"),text,QMessageBox.Yes)
+        return QMessageBox.critical(self,self.translateText("Critical"),self.translateText(text),QMessageBox.Yes)
 
     def warnning(self,text):
-        return QMessageBox.warning(self,self.translateText("Warning"),text,QMessageBox.Yes)
+        return QMessageBox.warning(self,self.translateText("Warning"),self.translateText(text),QMessageBox.Yes)
 
     def updateRecentFiles(self):
         self.menu_Recent_Files.clear()
@@ -482,17 +493,23 @@ class Application(QMainWindow, Ui_MainWindow):
     def checkSelectedBefore(self,fn):
         def func(*x):
             if self.core.selected == '':
-                self.critical(self.translateText('No data selcted!'))
+                self.critical('No data selcted!')
                 return
             return fn()
         return func
+
+    def alertBeforeDelete(self,fn):
+        if int(self.defaultSetting('UI/AlertBeforeDelete',0)) == 0:
+            return fn()
+        if self.prompt('Are you sure you want to delete?',msg='warnning') == QMessageBox.Yes:
+            return fn()
 
     def tryRun(self,fn):
         def func(*x):
             try:
                 fn()
             except Exception as identifier:
-                self.critical(self.translateText(str(identifier)))
+                self.critical(str(identifier))
         return func
 
     def exportData(self):
@@ -502,7 +519,7 @@ class Application(QMainWindow, Ui_MainWindow):
         (fileName,fileType) = QFileDialog.getSaveFileName(self,self.translateText("Save File"),lastFilePath,extensions,defaultExtension)
         if not fileName:
             return
-        File(fileName).write_data(str(self.core.datas[self.core.selected]))
+        File(fileName).write_data(self.core.datas[self.core.selected].tolist())
 
     def initGraphView(self):
         self.plot = PlotWidget(enableAutoRange=True)
@@ -708,6 +725,8 @@ class Application(QMainWindow, Ui_MainWindow):
         self.plot.show()
 
     def openDataFile(self,fn):
+        if int(self.defaultSetting("UI/OpenMultiFiles",0)) == 1:
+            return self.openDataFiles(fn)
         lastFilePath = self.defaultSetting("File/lastFilePath",self.dirname)
         recentFiles = self.defaultSetting("File/recentFiles",[])
         defaultExtension = self.defaultSetting("FileStructure/defaultExtension","Text File (*.txt)")
@@ -722,11 +741,36 @@ class Application(QMainWindow, Ui_MainWindow):
             fn(fileName)
         except Exception as identify:
             print(identify)
-            self.critical(self.translateText('Invalid Data File!'))
+            self.critical('Invalid Data File!')
         if not fileName in recentFiles:
             recentFiles.append(fileName)
         if len(recentFiles) > 10:
             recentFiles.pop(0)
+        self.settings.setValue('File/recentFiles',recentFiles)
+        self.settings.sync()
+
+    def openDataFiles(self,fn):
+        lastFilePath = self.defaultSetting("File/lastFilePath",self.dirname)
+        recentFiles = self.defaultSetting("File/recentFiles",[])
+        defaultExtension = self.defaultSetting("FileStructure/defaultExtension","Text File (*.txt)")
+        extensions = "All (*.txt;*.csv;*.xls;*.xlsx);;Text File (*.txt);;CSV File (*.csv);;Excel File (*.xls;*.xlsx)"
+        (fileNames,fileType) =QFileDialog.getOpenFileNames(self,self.translateText('Please select a data file'),lastFilePath,extensions,defaultExtension)
+        if len(fileNames) == 0:
+            return
+        fileName = fileNames[0].replace('/','\\')
+        dirName = os.path.dirname(fileName)
+        self.settings.setValue('File/lastFilePath',dirName)
+        for fileName in fileNames:
+            fileName = fileName.replace('/','\\')
+            try:
+                fn(fileName)
+            except Exception as identify:
+                print(identify)
+                self.critical('Invalid Data File!')
+            if not fileName in recentFiles:
+                recentFiles.append(fileName)
+            if len(recentFiles) > 10:
+                recentFiles.pop(0)
         self.settings.setValue('File/recentFiles',recentFiles)
         self.settings.sync()
 
@@ -742,7 +786,7 @@ class Application(QMainWindow, Ui_MainWindow):
             file = File(fileName)
             file.read_data()
         except:
-            self.critical(self.translateText('A error occur, please contact author for help!'))
+            self.critical('A error occur, please contact author for help!')
             return
         (fileName,fileType) = QFileDialog.getSaveFileName(self,"Save File",dirName,new,new)
         if fileName == '':
@@ -751,9 +795,9 @@ class Application(QMainWindow, Ui_MainWindow):
 
     def loadProjectFile(self,file):
         if not self.projectFile == None:
-            if self.prompt(self.translateText('Do you want to replace current project file?'),'warnning') == QMessageBox.No:
+            if self.prompt('Do you want to replace current project file?','warnning') == QMessageBox.No:
                 return
-            if self.prompt(self.translateText('DO you need to save current project file?')) == QMessageBox.Yes:
+            if self.prompt('DO you need to save current project file?') == QMessageBox.Yes:
                 self.core.save_project(self.projectFile)
         try:
             self.core.read_project(file)

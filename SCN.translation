@@ -62,6 +62,7 @@
         "No data selcted!": "没有选中的数据！",
         "Save File": "保存文件",
         "Please select a data file": "请选择一个数据文件",
+        "Are you sure you want to delete?":"你确定要删除吗？",
         "Invalid Data File!": "不是合法的数据文件！",
         "A error occur, please contact author for help!": "未知错误，请联系作者！",
         "Save AECA Project File": "保存AECA项目文件",
@@ -90,6 +91,7 @@
         "Curve":"曲线",
         "Graph":"图像",
         "Core Function":"内核功能",
+        "UI Function":"UI功能",
         "Curve Type":"曲线类型",
         "Curve Width":"曲线宽度",
         "Symbol Size":"散点大小",
@@ -121,5 +123,9 @@
         "dVdQ Scale Suffix":"dVdQ缩放数据后缀",
         "VQ Scale Suffix":"VQ缩放数据后缀",
         "Gen Suffix":"生成数据后缀",
-        "Apply":"应用"
+        "Apply":"应用",
+        "Alert Before Delete":"删除前提醒",
+        "Enable Open MultiDatas":"载入多个数据",
+        "Cache Directory":"缓存文件夹",
+        "Browse":"浏览"
 }

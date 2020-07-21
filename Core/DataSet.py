@@ -26,6 +26,9 @@ class DataSet:
     def __str__(self):
         return '\n'.join(map(lambda x:'\t'.join(map(str,x)),np.array([self.x_data,self.y_data]).T))
 
+    def tolist(self):
+        return (np.array([self.x_data,self.y_data]).T).tolist()
+
     def data(self):
         return (self.x_data,self.y_data)
 

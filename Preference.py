@@ -1,9 +1,9 @@
-import sys,re
+import os,sys,re
 from json import load
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QIcon, QBrush, QColor, QCursor, QPalette, QPainter, QFont, QPen
 from PyQt5.QtCore import Qt, Signal, QRect
-from PyQt5.QtWidgets import QWidget, QListWidget, QListWidgetItem, QApplication, QStackedWidget, QRadioButton, QAbstractItemView, QHBoxLayout, QFormLayout, QGridLayout, QLineEdit, QCheckBox, QLabel,QComboBox,QDesktopWidget, QPushButton, QSpinBox, QColorDialog, QMenu, QAction, QTextEdit, QDoubleSpinBox, QSlider
+from PyQt5.QtWidgets import QWidget, QFileDialog, QListWidget, QListWidgetItem, QApplication, QStackedWidget, QRadioButton, QAbstractItemView, QHBoxLayout, QFormLayout, QGridLayout, QLineEdit, QCheckBox, QLabel,QComboBox,QDesktopWidget, QPushButton, QSpinBox, QColorDialog, QMenu, QAction, QTextEdit, QDoubleSpinBox, QSlider
 
 class ColorLabel(QLabel):
     clicked = Signal()
@@ -93,27 +93,31 @@ class Preference(QWidget):
         self.setWindowIcon(QIcon('resource/curve.ico'))
 
         self.list = QListWidget()
-        self.list.setFixedWidth(180)
+        self.list.setFixedWidth(120)
         self.list.insertItem(0,self.translate('File Structure'))
         self.list.insertItem(1,self.translate('Curve'))
         self.list.insertItem(2,self.translate('Graph'))
         self.list.insertItem(3,self.translate('Core Function'))
+        self.list.insertItem(4,self.translate('UI Function'))
 
         self.stack1 = QWidget()
         self.stack2 = QWidget()
         self.stack3 = QWidget()
         self.stack4 = QWidget()
+        self.stack5 = QWidget()
 
         self.tab1UI()
         self.tab2UI()
         self.tab3UI()
         self.tab4UI()
+        self.tab5UI()
 
         self.stack = QStackedWidget()
         self.stack.addWidget(self.stack1)
         self.stack.addWidget(self.stack2)
         self.stack.addWidget(self.stack3)
         self.stack.addWidget(self.stack4)
+        self.stack.addWidget(self.stack5)
 
         hbox = QHBoxLayout()
         hbox.addWidget(self.list)
@@ -499,6 +503,48 @@ class Preference(QWidget):
         SuffixScale1.textChanged.connect(hotfix('SuffixScale1'))
         SuffixScale2.textChanged.connect(hotfix('SuffixScale2'))
         SuffixGen.textChanged.connect(hotfix('SuffixGen'))
+
+    def tab5UI(self):
+        #表单布局
+        layout = QFormLayout()
+        layout.setContentsMargins(10, 10, 10, 10)
+        layout.setSpacing(10)
+        #创建组件
+        AlertBeforeDelete = SwitchButton()
+        OpenMultiFiles = SwitchButton()
+        #
+        tempbox = QHBoxLayout()
+        TempDirectory = QLineEdit()
+        selectBtn = QPushButton(self.translate('Browse'))
+        selectBtn.setFixedWidth(50)
+        tempbox.addWidget(TempDirectory)
+        tempbox.addWidget(selectBtn)
+        def selectLocation():
+            filepath = QFileDialog.getExistingDirectory(None,self.translate('Select Cache Directory'), os.getcwd())
+            if not filepath:
+                return
+            TempDirectory.setText(filepath)
+
+        selectBtn.clicked.connect(selectLocation)
+
+        #创建UI
+        layout.addRow(QLabel(self.translate('Alert Before Delete')),AlertBeforeDelete)
+        layout.addRow(QLabel(self.translate('Enable Open MultiDatas')),OpenMultiFiles)
+        layout.addRow(QLabel(self.translate('Cache Directory')),tempbox)
+        self.stack5.setLayout(layout)
+        #初始化
+        AlertBeforeDelete.setValue(int(self.defaultSetting('UI/AlertBeforeDelete',0)))
+        OpenMultiFiles.setValue(int(self.defaultSetting('UI/OpenMultiFiles',0)))
+        TempDirectory.setText(self.defaultSetting('UI/TempDirectory',''))
+        #绑定事件
+        def hotfix(key):
+            def func(value):
+                self.setSetting('UI/'+key,value)
+            return func
+
+        AlertBeforeDelete.valueChanged.connect(hotfix('AlertBeforeDelete'))
+        OpenMultiFiles.valueChanged.connect(hotfix('OpenMultiFiles'))
+        TempDirectory.textChanged.connect(hotfix('TempDirectory'))
 
     def display(self,index):
         self.stack.setCurrentIndex(index)

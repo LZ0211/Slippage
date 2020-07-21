@@ -1,0 +1,1 @@
+nuitka3  --mingw64 --standalone --windows-disable-console --show-progress --show-memory --plugin-enable=qt-plugins --follow-imports --nofollow-import-to=numpy,scipy,pandas,matplotlib,pyqtgraph,openpyxl,xlrd,xlwt --windows-icon=resource/curve.ico --output-dir=out AECA.py

@@ -373,19 +373,20 @@ class Engine:
             self.clear_data(text)
         self.triggle('change')
 
-    def remove_data(self,batch=False):
+    def remove_data(self):
         selected = self.selected
         if selected == '':
             return
-        if batch == False:
-            self.clear_data(selected)
-            self.triggle('change')
+        self.clear_data(selected)
+        self.triggle('change')
+
+    def batch_remove_data(self):
+        selected = self.selected
+        if selected == '':
             return
-        #批量删除
         keys = list(self.datas.keys())
         keys = list(filter(lambda x:isStartWith(x,selected),keys))
         self.clear_datas(keys)
-        #更新UI
         self.triggle('change')
 
     def alias_data(self,name):
