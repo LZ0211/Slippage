@@ -1,6 +1,6 @@
 # coding=utf-8
 import fix_qt_import_error
-import re,os,sys,random,traceback
+import re,os,sys,random,traceback,subprocess
 #sys.path = ['','libs','libs/python.zip','libs/env']
 from Core import Engine,File,Smooth
 from PyQt5 import uic
@@ -122,8 +122,9 @@ class Application(QMainWindow, Ui_MainWindow):
                 tempfile = None
             else:
                 tempfile = os.path.join(tempdir,'temp.txt')
+                tempfile = tempfile.replace('/','\\')
             file = File.temp(str(self.core.datas[self.core.selected]),tempfile)
-            os.popen("start notepad "+file)
+            subprocess.Popen([file],shell=True)
 
         self.action_View.triggered.connect(self.checkSelectedBefore(viewData))
         self.action_Swap.triggered.connect(self.checkSelectedBefore(self.core.invert_data))
@@ -153,7 +154,7 @@ class Application(QMainWindow, Ui_MainWindow):
                 self.settings.setValue('File/lastProjectFilePath',dirName)
                 self.projectFile = fileName
             self.core.save_project(self.projectFile)
-            self.infomation('Save AECA project file successful!')
+            self.information('Save AECA project file successful!')
         def openProject():
             lastFilePath = self.defaultSetting("File/lastProjectFilePath",self.dirname)
             extension = "AECA Project File (*.apf)"
@@ -238,10 +239,18 @@ class Application(QMainWindow, Ui_MainWindow):
             dirName = os.path.dirname(fileName)
             self.settings.setValue('File/CollectFilePath',dirName)
             self.core.collect.export_file(fileName)
-            self.infomation('Export statistic data file successful!')
+            self.information('Export statistic data file successful!')
+        def viewExcel():
+            tempdir = self.defaultSetting('UI/TempDirectory','')
+            if tempdir == '':
+                tempfile = None
+            else:
+                tempfile = os.path.join(tempdir,'temp.xlsx')
+                tempfile = tempfile.replace('/','\\')
+            self.core.collect.view_file(tempfile)
         self.action_Data_Write.triggered.connect(self.core.collect_params)
         self.action_Data_Export.triggered.connect(exportExcel)
-        self.action_Data_View.triggered.connect(lambda :self.core.collect.view_file())
+        self.action_Data_View.triggered.connect(viewExcel)
 
     def bindSpinBoxAction(self):
         #修改UI参数自动设置内核参数
@@ -355,13 +364,15 @@ class Application(QMainWindow, Ui_MainWindow):
         self.Guess_Button.clicked.connect(self.tryRun(self.core.init_guess))
 
     def bindHelpAction(self):
-        self.action_UserGuide.triggered.connect(lambda :os.popen("start "+os.path.join(self.dirname,'UserGuide.pdf')))
-        self.action_Author_Email.triggered.connect(lambda :self.infomation('Please contact author: WangC7@ATLBattery.com'))
+        self.action_UserGuide.triggered.connect(lambda : subprocess.Popen([os.path.join(self.dirname,'UserGuide.pdf')],shell=True))
+        self.action_Author_Email.triggered.connect(lambda :self.information('Please contact author: WangC7@ATLBattery.com'))
 
     def initCoreFunction(self):
         self.core.auto_scale = int(self.defaultSetting('Core/AutoScale',0)) > 0
         self.core.auto_cal = int(self.defaultSetting('Core/AutoCalParam',0)) > 0
         self.core.max_capacity = float(self.defaultSetting('Core/MaxCapacity',0))
+        self.core.use_max_capacity = int(self.defaultSetting('Core/UseMaxCapacity',0)) > 0
+        self.core.max_points = int(self.defaultSetting('Core/MaxPoints',500))
         if not self.core.auto_cal or self.core.max_capacity <= 0:
             self.Pos_Shift2_Label.setDisabled(True)
             self.Pos_Shift2_Slider.setDisabled(True)
@@ -473,7 +484,7 @@ class Application(QMainWindow, Ui_MainWindow):
         else:
             return QMessageBox.information(self,self.translateText("Information"),self.translateText(text),QMessageBox.Yes | QMessageBox.No)
 
-    def infomation(self,text):
+    def information(self,text):
         return QMessageBox.information(self,self.translateText("Information"),self.translateText(text),QMessageBox.Yes)
         
     def critical(self,text):
@@ -808,7 +819,7 @@ class Application(QMainWindow, Ui_MainWindow):
             open('error.log','w+').write(traceback.format_exc())
             self.critical(file + self.translateText(' is not an invalid AECA project file!'))
             #Window平台直接记事本打开
-            os.popen("start notepad error.log")
+            subprocess.Popen(['error.log'],shell=True)
 
     def defaultSetting(self,key,default):
         value = self.settings.value(key)
@@ -829,7 +840,13 @@ class Application(QMainWindow, Ui_MainWindow):
             e.ignore() 
 
     def dropEvent(self,e):
-        self.loadProjectFile(e.mimeData().text().replace('file:///',''))
+        fileName = e.mimeData().text()
+        #windows
+        fileName = re.sub(r'^file:///','',fileName)
+        #虚拟桌面
+        fileName = re.sub(r'^file:','',fileName)
+        #self.information(fileName)
+        self.loadProjectFile(fileName)
 
     def closeEvent(self, QCloseEvent):
         if self.preference:

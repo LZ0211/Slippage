@@ -41,6 +41,8 @@ class Engine:
         self.max_capacity = 0
         self.auto_scale = False
         self.auto_guess = False
+        self.use_max_capacity = False
+        self.max_points = 500
         self.suffix_smooth = '_M'
         self.suffix_diff = '_D'
         self.suffix_cut = '_C'
@@ -58,7 +60,7 @@ class Engine:
             'smooth':[]
         }
         self.trigger = False
-        self.collect = Table(filename = 'temp.xlsx')
+        self.collect = Table()
 
     def new_project(self):
         self.datas = {}
@@ -118,7 +120,7 @@ class Engine:
         self.load_project_data(z,'cut_range')
         self.load_project_data(z,'pos_tag')
         self.load_project_data(z,'neg_tag')
-        self.collect = Table(z.read('collect'),'temp.xlsx')
+        self.collect = Table(z.read('collect'))
         z.close()
         #兼容旧版本文件
         if len(self.params) < 6:
@@ -581,9 +583,16 @@ class Engine:
                 self.datas[neg_name+suffix] = neg
             if pos_name and neg_name:
                 key = 'Full_' + re.split(r'[\-_\s]+',pos_name)[0] + '_' + re.split(r'[\-_\s]+',neg_name)[0]
-                x_data,y_data = pos()
-                y = interp1d(*neg(), fill_value="extrapolate")(x_data)
-                self.datas[key+suffix] = DataSet(x_data,y_data-y)
+                if self.use_max_capacity:
+                    lower = 0
+                    upper = self.max_capacity
+                else:
+                    lower = max(pos.x_min,neg.x_min)
+                    upper = min(pos.x_max,neg.x_max)
+                x_data = np.linspace(lower, upper, int(max(self.max_capacity,self.max_points)))
+                y1 = interp1d(*pos(), fill_value="extrapolate")(x_data)
+                y2 = interp1d(*neg(), fill_value="extrapolate")(x_data)
+                self.datas[key+suffix] = DataSet(x_data,y1-y2)
                 self.for_display = [pos_name+suffix,neg_name+suffix,key+suffix]
             if pos_name or neg_name:
                 self.triggle('change')

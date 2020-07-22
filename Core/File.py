@@ -1,5 +1,5 @@
 # coding=utf-8
-import os,re
+import os,re,subprocess
 from uuid import uuid4 as uuid
 from tempfile import mktemp
 from chardet import detect
@@ -17,7 +17,7 @@ class File:
     @staticmethod
     def temp(data,file=None):
         if file == None:
-            file = mktemp()
+            file = mktemp() + '.txt'
         open(file,'w+').write(data)
         return file
 
@@ -287,17 +287,19 @@ class Table:
         c1.y_axis.majorGridlines.spPr = sgp
         self.worksheet.add_chart(c1, "C%s"%self.rows)
 
-    def view_file(self):
-        self.save_file()
-        new_tab = Table(open(self.filename,'rb').read())
+    def view_file(self,temp=None):
+        if temp == None:
+            temp = self.filename
+        self.save_file(temp)
+        new_tab = Table(open(temp,'rb').read())
         new_tab.insert_graph()
         new_tab.workbook.security.workbookPassword = str(uuid())
         new_tab.workbook.security.lockStructure = True
         new_tab.worksheet.protection.password = str(uuid())
         new_tab.worksheet.protect = True
         new_tab.worksheet.protection.enable()
-        new_tab.save_file()
-        os.popen('start '+new_tab.filename)
+        new_tab.save_file(temp)
+        subprocess.Popen(['%s' % temp],shell=True)
 
     #原始数据，不带图表
     def save_file(self,filename=None):
