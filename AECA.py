@@ -1,6 +1,6 @@
 # coding=utf-8
 import fix_qt_import_error
-import re,os,sys,random,traceback,subprocess
+import re,os,sys,random,traceback,subprocess,platform
 #sys.path = ['','libs','libs/python.zip','libs/env']
 from Core import Engine,File,Smooth
 from PyQt5 import uic
@@ -8,7 +8,6 @@ from PyQt5.QtWidgets import QMainWindow, QApplication, QSplashScreen, QInputDial
 from PyQt5.QtCore import QSettings, Qt,QPoint
 from PyQt5.QtGui import QPixmap,QCursor
 from pyqtgraph import PlotWidget, mkPen, mkColor
-
 
 from UI import Ui_MainWindow
 from Preference import Preference
@@ -31,6 +30,8 @@ class Application(QMainWindow, Ui_MainWindow):
         self.projectFile = None
         #self.preference = Preference(self)
         splash.finish(self)
+        self.system = platform.system()
+        self.pathSeg = '\\' if self.system == 'Windows' else '/'
 
     #初始化绑定事件
     def initAction(self):
@@ -122,9 +123,12 @@ class Application(QMainWindow, Ui_MainWindow):
                 tempfile = None
             else:
                 tempfile = os.path.join(tempdir,'temp.txt')
-                tempfile = tempfile.replace('/','\\')
+                tempfile = tempfile.replace('/','\\').replace('\\',self.pathSeg)
             file = File.temp(str(self.core.datas[self.core.selected]),tempfile)
-            subprocess.Popen([file],shell=True)
+            if self.system == 'Windows':
+                subprocess.Popen([file],shell=True)
+            else:
+                subprocess.Popen(['open %s' % file],shell=True)
 
         self.action_View.triggered.connect(self.checkSelectedBefore(viewData))
         self.action_Swap.triggered.connect(self.checkSelectedBefore(self.core.invert_data))
@@ -149,7 +153,7 @@ class Application(QMainWindow, Ui_MainWindow):
                 (fileName,fileType) = QFileDialog.getSaveFileName(self,self.translateText('Save AECA Project File'),lastFilePath,extension,extension)
                 if fileName == '':
                     return
-                fileName = fileName.replace('/','\\')
+                fileName = fileName.replace('/','\\').replace('\\',self.pathSeg)
                 dirName = os.path.dirname(fileName)
                 self.settings.setValue('File/lastProjectFilePath',dirName)
                 self.projectFile = fileName
@@ -161,7 +165,7 @@ class Application(QMainWindow, Ui_MainWindow):
             (fileName,fileType) = QFileDialog.getOpenFileName(self,self.translateText('Please select a AECA project file'),lastFilePath,extension,extension)
             if fileName == '':
                 return
-            fileName = fileName.replace('/','\\')
+            fileName = fileName.replace('/','\\').replace('\\',self.pathSeg)
             self.loadProjectFile(fileName)
         def newProject():
             if not self.projectFile == None:
@@ -235,7 +239,7 @@ class Application(QMainWindow, Ui_MainWindow):
             (fileName,fileType) = QFileDialog.getSaveFileName(self,self.translateText('Save statistic data file'),lastFilePath,extension,extension)
             if fileName == '':
                 return
-            fileName = fileName.replace('/','\\')
+            fileName = fileName.replace('/','\\').replace('\\',self.pathSeg)
             dirName = os.path.dirname(fileName)
             self.settings.setValue('File/CollectFilePath',dirName)
             self.core.collect.export_file(fileName)
@@ -246,8 +250,12 @@ class Application(QMainWindow, Ui_MainWindow):
                 tempfile = None
             else:
                 tempfile = os.path.join(tempdir,'temp.xlsx')
-                tempfile = tempfile.replace('/','\\')
-            self.core.collect.view_file(tempfile)
+                tempfile = tempfile.replace('/','\\').replace('\\',self.pathSeg)
+            tempfile = self.core.collect.view_file(tempfile)
+            if self.system == 'Windows':
+                subprocess.Popen([tempfile],shell=True)
+            else:
+                subprocess.Popen(['open %s' % tempfile],shell=True)
         self.action_Data_Write.triggered.connect(self.core.collect_params)
         self.action_Data_Export.triggered.connect(exportExcel)
         self.action_Data_View.triggered.connect(viewExcel)
@@ -364,7 +372,7 @@ class Application(QMainWindow, Ui_MainWindow):
         self.Guess_Button.clicked.connect(self.tryRun(self.core.init_guess))
 
     def bindHelpAction(self):
-        self.action_UserGuide.triggered.connect(lambda : subprocess.Popen([os.path.join(self.dirname,'UserGuide.pdf')],shell=True))
+        self.action_UserGuide.triggered.connect(lambda : subprocess.Popen([os.path.join(self.dirname,'UserGuide.pdf')],shell=True) if self.system == 'Windows' else subprocess.Popen(['open %s' % os.path.join(self.dirname,'UserGuide.pdf')],shell=True))
         self.action_Author_Email.triggered.connect(lambda :self.information('Please contact author: WangC7@ATLBattery.com'))
 
     def initCoreFunction(self):
@@ -745,7 +753,7 @@ class Application(QMainWindow, Ui_MainWindow):
         (fileName,fileType) =QFileDialog.getOpenFileName(self,self.translateText('Please select a data file'),lastFilePath,extensions,defaultExtension)
         if fileName == '':
             return
-        fileName = fileName.replace('/','\\')
+        fileName = fileName.replace('/','\\').replace('\\',self.pathSeg)
         dirName = os.path.dirname(fileName)
         self.settings.setValue('File/lastFilePath',dirName)
         try:
@@ -768,11 +776,11 @@ class Application(QMainWindow, Ui_MainWindow):
         (fileNames,fileType) =QFileDialog.getOpenFileNames(self,self.translateText('Please select a data file'),lastFilePath,extensions,defaultExtension)
         if len(fileNames) == 0:
             return
-        fileName = fileNames[0].replace('/','\\')
+        fileName = fileNames[0].replace('/','\\').replace('\\',self.pathSeg)
         dirName = os.path.dirname(fileName)
         self.settings.setValue('File/lastFilePath',dirName)
         for fileName in fileNames:
-            fileName = fileName.replace('/','\\')
+            fileName = fileName.replace('/','\\').replace('\\',self.pathSeg)
             try:
                 fn(fileName)
             except Exception as identify:
@@ -790,7 +798,7 @@ class Application(QMainWindow, Ui_MainWindow):
         (fileName,fileType) = QFileDialog.getOpenFileName(self,self.translateText('Please select a data file'),lastFilePath,old,old)
         if fileName == '':
             return
-        fileName = fileName.replace('/','\\')
+        fileName = fileName.replace('/','\\').replace('\\',self.pathSeg)
         dirName = os.path.dirname(fileName)
         file = None
         try:
@@ -819,7 +827,10 @@ class Application(QMainWindow, Ui_MainWindow):
             open('error.log','w+').write(traceback.format_exc())
             self.critical(file + self.translateText(' is not an invalid AECA project file!'))
             #Window平台直接记事本打开
-            subprocess.Popen(['error.log'],shell=True)
+            if self.system == 'Windows':
+                subprocess.Popen(['error.log'],shell=True)
+            else:
+                subprocess.Popen(['open error.log'],shell=True)
 
     def defaultSetting(self,key,default):
         value = self.settings.value(key)
@@ -841,10 +852,14 @@ class Application(QMainWindow, Ui_MainWindow):
 
     def dropEvent(self,e):
         fileName = e.mimeData().text()
+        print(fileName)
         #windows
-        fileName = re.sub(r'^file:///','',fileName)
-        #虚拟桌面
-        fileName = re.sub(r'^file:','',fileName)
+        if self.system == 'Windows':
+            fileName = re.sub(r'^file:///','',fileName)
+            #虚拟桌面
+            fileName = re.sub(r'^file:','',fileName)
+        else:
+            fileName = re.sub(r'^file://','',fileName)
         #self.information(fileName)
         self.loadProjectFile(fileName)
 

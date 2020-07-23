@@ -1,5 +1,5 @@
 # coding=utf-8
-import os,re,subprocess
+import os,re
 from uuid import uuid4 as uuid
 from tempfile import mktemp
 from chardet import detect
@@ -147,14 +147,14 @@ class Table:
             self.workbook =  xlsx_Workbook()
             self.worksheet = self.workbook.active
             self.worksheet.title = '汇总'
-            self.worksheet.protection.password = str(uuid())
+            #self.worksheet.protection.password = str(uuid())
             self.rows = 1
             self.init_tab_header()
         else:
             open(self.filename,'wb+').write(stream)
             self.workbook = load_workbook(self.filename)
             self.worksheet = self.workbook.get_sheet_by_name(self.workbook.sheetnames[0])
-            self.worksheet.protection.password = str(uuid())
+            #self.worksheet.protection.password = str(uuid())
             self.rows = self.worksheet.max_row + 1
 
 
@@ -299,7 +299,7 @@ class Table:
         new_tab.worksheet.protect = True
         new_tab.worksheet.protection.enable()
         new_tab.save_file(temp)
-        subprocess.Popen(['%s' % temp],shell=True)
+        return temp
 
     #原始数据，不带图表
     def save_file(self,filename=None):
