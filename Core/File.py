@@ -300,6 +300,7 @@ class Table:
         new_tab.worksheet.protection.enable()
         new_tab.save_file(temp)
         return temp
+        #subprocess.Popen(['%s' % temp],shell=True)
 
     #原始数据，不带图表
     def save_file(self,filename=None):

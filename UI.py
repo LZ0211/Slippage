@@ -283,6 +283,7 @@ class Ui_MainWindow(object):
         self.menu_Tool = QtWidgets.QMenu(self.menubar)
         self.menu_Help = QtWidgets.QMenu(self.menubar)
         self.menu_Language = QtWidgets.QMenu(self.menubar)
+        self.menu_Theme = QtWidgets.QMenu(self.menubar)
         MainWindow.setMenuBar(self.menubar)
 
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -378,6 +379,7 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menu_Tool.menuAction())
         self.menubar.addAction(self.menu_Language.menuAction())
         self.menubar.addAction(self.menu_Help.menuAction())
+        self.menubar.addAction(self.menu_Theme.menuAction())
         self.toolBar.addAction(self.action_Positive_Reference)
         self.toolBar.addAction(self.action_Negative_Reference)
         self.toolBar.addAction(self.action_Measured_Data)
@@ -437,6 +439,7 @@ class Ui_MainWindow(object):
         self.menu_Tool.setTitle(_translate("MainWindow", "&Tool"))
         self.menu_Help.setTitle(_translate("MainWindow", "&Help"))
         self.menu_Language.setTitle(_translate("MainWindow", "&Language"))
+        self.menu_Theme.setTitle(_translate("MainWindow", "&Theme"))
         self.action_New.setText(_translate("MainWindow", "&New"))
         self.action_New.setShortcut(_translate("MainWindow", "Ctrl+N"))
         self.action_Project.setText(_translate("MainWindow", "&Project"))
@@ -479,7 +482,6 @@ class Ui_MainWindow(object):
         self.action_Chinese_Traditional.setText(_translate("MainWindow", "&Chinese Traditional"))
         self.action_UserGuide.setText(_translate("MainWindow", "&User Guide"))
         self.action_Author_Email.setText(_translate("MainWindow", "&Email"))
-
         self.list_menu_display.setTitle(_translate("MainWindow", "&Display"))
         self.list_action_delete.setText(_translate("MainWindow", "&Delete"))
         self.list_action_rename.setText(_translate("MainWindow", "&Rename"))
@@ -499,9 +501,9 @@ class Ui_MainWindow(object):
         self.retranslateUI()
 
     def transChineseSimplified(self):
-        self.langText = load(open('SCN.translation',encoding='utf-8'))
+        self.langText = load(open('resource/SCN.translation',encoding='utf-8'))
         self.retranslateUI()
 
     def transChineseTraditional(self):
-        self.langText = load(open('TCN.translation',encoding='utf-8'))
+        self.langText = load(open('resource/TCN.translation',encoding='utf-8'))
         self.retranslateUI()
