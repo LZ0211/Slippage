@@ -159,6 +159,11 @@ class Table:
 
 
     def init_tab_header(self):
+        self.worksheet.row_dimensions[1].height = 18
+        self.worksheet.column_dimensions['B'].width = 12
+        self.worksheet.column_dimensions['C'].width = 12
+        for col in ["A","D","E","F","G","H","I","J","K","L","M","N","O","P"]:
+            self.worksheet.column_dimensions[col].width = 9
         border = Border(
             left=Side(style='thin',color='FF000000'),
             right=Side(style='thin',color='FF000000'),
@@ -169,68 +174,52 @@ class Table:
             fill_type='solid',
             fgColor='FFFFFF00'
         )
+
         font = Font(name='等线',size=14,bold=True)
-        self.worksheet.row_dimensions[1].height = 18
-        self.worksheet.column_dimensions['A'].width = 9
-        self.worksheet.column_dimensions['B'].width = 12
-        self.worksheet.column_dimensions['C'].width = 12
-        self.worksheet.column_dimensions['D'].width = 9
-        self.worksheet.column_dimensions['E'].width = 9
-        self.worksheet.column_dimensions['F'].width = 9
-        self.worksheet.column_dimensions['G'].width = 9
-        self.worksheet.column_dimensions['H'].width = 9
-        self.worksheet.column_dimensions['I'].width = 9
-        self.worksheet.column_dimensions['J'].width = 9
-        self.worksheet.column_dimensions['K'].width = 9
-        self.worksheet.column_dimensions['L'].width = 9
         self.worksheet['B1'] = 'Qfull'
         self.worksheet['B1'].border = border
         self.worksheet['B1'].font = font
+
         font = Font(name='等线',size=11,bold=True)
         self.worksheet['C1'] = 'No.'
         self.worksheet['C1'].border = border
         self.worksheet['C1'].font = font
+        
         font = Font(name='等线',size=11)
-        self.worksheet['D1'] = 'Mp'
-        self.worksheet['D1'].border = border
-        self.worksheet['D1'].fill = fill
-        self.worksheet['D1'].font = font
-        self.worksheet['E1'] = 'Sp'
-        self.worksheet['E1'].border = border
-        self.worksheet['E1'].fill = fill
-        self.worksheet['E1'].font = font
-        self.worksheet['F1'] = 'Mn'
-        self.worksheet['F1'].border = border
-        self.worksheet['F1'].fill = fill
-        self.worksheet['F1'].font = font
-        self.worksheet['G1'] = 'Sn'
-        self.worksheet['G1'].border = border
-        self.worksheet['G1'].fill = fill
-        self.worksheet['G1'].font = font
-        self.worksheet['H1'] = 'RMSD'
-        self.worksheet['H1'].border = border
-        self.worksheet['H1'].fill = fill
-        self.worksheet['H1'].font = font
+        headers = {
+            "D":"Mp",
+            "E":"Sp",
+            "F":"Mn",
+            "G":"Sn",
+            "H":"Error",
+            "M":"PLS",
+            "N":"PRS",
+            "O":"NLS",
+            "P":"NRS"
+        }
+        for (k,v) in headers.items():
+            cell = k+"1"
+            self.worksheet[cell] = v
+            self.worksheet[cell].border = border
+            self.worksheet[cell].fill = fill
+            self.worksheet[cell].font = font
+
         fill = PatternFill(
             fill_type='solid',
             fgColor='FF00B0F0'
         )
-        self.worksheet['I1'] = 'LLI'
-        self.worksheet['I1'].border = border
-        self.worksheet['I1'].fill = fill
-        self.worksheet['I1'].font = font
-        self.worksheet['J1'] = 'LAM-PE'
-        self.worksheet['J1'].border = border
-        self.worksheet['J1'].fill = fill
-        self.worksheet['J1'].font = font
-        self.worksheet['K1'] = 'LAM-NE'
-        self.worksheet['K1'].border = border
-        self.worksheet['K1'].fill = fill
-        self.worksheet['K1'].font = font
-        self.worksheet['L1'] = 'Total Loss'
-        self.worksheet['L1'].border = border
-        self.worksheet['L1'].fill = fill
-        self.worksheet['L1'].font = font
+        headers = {
+            "I":"LLI",
+            "J":"LAM-PE",
+            "K":"LAM-NE",
+            "L":"Total Loss"
+        }
+        for (k,v) in headers.items():
+            cell = k+"1"
+            self.worksheet[cell] = v
+            self.worksheet[cell].border = border
+            self.worksheet[cell].fill = fill
+            self.worksheet[cell].font = font
         self.rows += 1
     
     def write_params(self,data):
@@ -241,7 +230,7 @@ class Table:
             bottom=Side(style='thin',color='FF000000')
         )
         font = Font(name='等线',size=11)
-        cells = 'B,C,D,E,F,G,H'.split(',')
+        cells = 'B,C,D,E,F,G,H,M,N,O,P'.split(',')
         idx = 0
         for cell in cells:
             cell += str(self.rows)

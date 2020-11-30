@@ -1,0 +1,1 @@
+nuitka --mingw64 --module --show-progress --output-dir=o %1
