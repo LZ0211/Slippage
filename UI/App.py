@@ -1,24 +1,32 @@
 import re,os,random,traceback,subprocess,platform
 from Core import Engine,File,Smooth
-from PyQt5.QtWidgets import QMainWindow, QApplication, QSplashScreen, QInputDialog, QLineEdit, QMessageBox, QListWidgetItem, QFileDialog, QAction, qApp,QMenu,QStyleFactory
-from PyQt5.QtCore import QSettings, Qt,QPoint
-from PyQt5.QtGui import QPixmap,QCursor
+from PyQt5.QtWidgets import QMainWindow, QApplication,  QSpinBox, QDialog, QLabel, QFormLayout, QDialogButtonBox, QComboBox, QInputDialog, QLineEdit, QMessageBox, QListWidgetItem, QFileDialog, QAction, qApp,QMenu,QStyleFactory
+from PyQt5.QtCore import QSettings, QObject, Qt, QPoint
+from PyQt5.QtGui import QCursor
 from pyqtgraph import PlotWidget, mkPen, mkColor, LinearRegionItem, ScatterPlotItem, PlotCurveItem, PlotDataItem, LinearRegionItem, InfiniteLine
 
 from .Window import Ui_MainWindow
 from .Preference import Preference
 from .FindPeak import FindPeak
 
-class Application(QMainWindow, Ui_MainWindow):
+def match(text,filter):
+    keys = filter.split()
+    for k in keys:
+        if len(text.split(k)) > 1:
+            return True
+    return False
 
+def isStartWith(str,patterm):
+    return patterm == str[:len(patterm)]
+
+class Application(QMainWindow, Ui_MainWindow):
+    defaultDir = os.path.expanduser('~')
     def __init__(self,dirname):
-        splash = QSplashScreen(QPixmap("resource/init.png"))
-        splash.show()
         QMainWindow.__init__(self)
         Ui_MainWindow.__init__(self)
         #super().__init__()
         self.dirname = dirname
-        self.settings = QSettings(os.path.join(dirname,"setting.ini"),QSettings.IniFormat)
+        self.settings = QSettings(os.path.join(self.defaultDir,"AECA_setting.ini"),QSettings.IniFormat)
         self.core = Engine()
         self.setupUi(self)
         self.initAction()
@@ -28,7 +36,6 @@ class Application(QMainWindow, Ui_MainWindow):
         self.projectFile = None
         self.fileChanged = False
         #self.preference = Preference(self)
-        splash.finish(self)
         self.system = platform.system()
         self.pathSeg = '\\' if self.system == 'Windows' else '/'
 
@@ -118,7 +125,7 @@ class Application(QMainWindow, Ui_MainWindow):
 
     def bindLanguageAction(self):
         def switchLanguage(language=None):
-            default = self.defaultSetting('Display/language','English')
+            default = self.defaultSetting('Display/language','Chinese Simplified')
             if default == language:
                 return
             if language == None:
@@ -159,11 +166,23 @@ class Application(QMainWindow, Ui_MainWindow):
             file = File.temp(str(self.core.datas[self.core.selected]),tempfile)
             self.previewFile(file)
 
+        def amplify():
+            value, ok = QInputDialog.getDouble(self, self.translateText("Maximum Capacity"), self.translateText("Please input the maximum capacity:"), QLineEdit.Normal, 1)
+            if ok:
+                capacity = self.core.max_capacity
+                self.core.max_capacity = value
+                self.core.capacity_data()
+                self.core.max_capacity = capacity
+
         self.action_View.triggered.connect(self.checkSelectedBefore(viewData))
         self.action_Swap.triggered.connect(self.checkSelectedBefore(self.core.invert_data))
         self.action_Rename.triggered.connect(self.checkSelectedBefore(rename))
+        self.action_Normalize.triggered.connect(self.checkSelectedBefore(self.core.normalize_data))
+        self.action_Amplify.triggered.connect(amplify)
+
+
         self.action_Delete.triggered.connect(lambda :self.alertBeforeDelete(self.checkSelectedBefore(self.core.remove_data)))
-        self.action_Export.triggered.connect(self.checkSelectedBefore(self.exportData))
+        self.action_Export.triggered.connect(self.checkSelectedBefore(lambda :self.exportData(lambda :self.core.get_data().tolist())))
         self.action_Delete_All.triggered.connect(lambda :self.alertBeforeDelete(self.checkSelectedBefore(self.core.batch_remove_data)))
 
     def bindToolsAction(self):
@@ -257,7 +276,7 @@ class Application(QMainWindow, Ui_MainWindow):
         self.Neg_Shift2_Slider.valueChanged.connect(modify_spinBox(5))
         #启动后读取配置
         self.Pos_Scale_Slider.setValue(int(self.defaultSetting('User/Pos_Scale',2)))
-        self.Pos_Shift_Slider.setValue(int(self.defaultSetting('User/Pos_Shift',2)))
+        self.Pos_Shift_Slider.setValue(int(self.defaultSetting('User/Pos_Shift',3)))
         self.Pos_Shift2_Slider.setValue(int(self.defaultSetting('User/Pos_Shift2',2)))
         self.Neg_Scale_Slider.setValue(int(self.defaultSetting('User/Neg_Scale',2)))
         self.Neg_Shift_Slider.setValue(int(self.defaultSetting('User/Neg_Shift',2)))
@@ -314,9 +333,38 @@ class Application(QMainWindow, Ui_MainWindow):
                 self.translateText('Negative Left Shift: ') + "%.3f" % self.core.params[3],
                 self.translateText('Negative Right Shift: ') + "%.3f" % self.core.params[5]
             ]))
+
+        def compare():
+            if len(self.core.for_display) < 2:
+                return
+            dialog = QDialog(self,Qt.Dialog)
+            form = QFormLayout(dialog)
+            inp1 = QComboBox(dialog)
+            inp1.addItems(self.core.for_display)
+            form.addRow(QLabel(self.translateText('Real Data:')),inp1)
+            inp2 = QComboBox(dialog)
+            inp2.addItems(self.core.for_display)
+            form.addRow(QLabel(self.translateText('Generated Data:')),inp2)
+            inp3 = QSpinBox(dialog)
+            inp3.setMinimum(1)
+            inp3.setMaximum(1000)
+            form.addRow(QLabel(self.translateText('Compare regions:')),inp3)
+            buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel,Qt.Horizontal,dialog)
+            form.addRow(buttonBox)
+            buttonBox.rejected.connect(dialog.close)
+            def export():
+                dialog.close()
+                sa = inp1.currentText()
+                sb = inp2.currentText()
+                val = inp3.value()
+                self.exportData(lambda :self.core.compare_datas(sa,sb,val))
+            buttonBox.accepted.connect(export)
+            dialog.show()
+            pass
         self.action_Data_Write.triggered.connect(self.core.collect_params)
         self.action_Data_Export.triggered.connect(exportExcel)
         self.action_Data_View.triggered.connect(viewExcel)
+        self.action_Data_Compare.triggered.connect(compare)
         self.action_Sheet_Export.triggered.connect(exportElectrodes)
         self.action_Electrode_Export.triggered.connect(viewPotential)
 
@@ -405,19 +453,38 @@ class Application(QMainWindow, Ui_MainWindow):
         self.Neg_List.activated[str].connect(self.core.select_neg)
         self.Full_List.activated[str].connect(self.core.select_full)
 
-        self.list_action_delete.triggered.connect(self.action_Delete.trigger)
-        self.list_action_rename.triggered.connect(self.action_Rename.trigger)
-        self.list_action_view.triggered.connect(self.action_View.trigger)
-        self.list_action_export.triggered.connect(self.action_Export.trigger)
+        #self.list_action_delete.triggered.connect(self.action_Delete.trigger)
+        #self.list_action_rename.triggered.connect(self.action_Rename.trigger)
+        #self.list_action_view.triggered.connect(self.action_View.trigger)
+        #self.list_action_export.triggered.connect(self.action_Export.trigger)
         self.list_action_delall.triggered.connect(lambda :self.alertBeforeDelete(lambda:self.core.clear_datas(list(map(lambda x:x.text(),self.listWidget.selectedItems())))))
         self.list_action_display.triggered.connect(self.core.display_all)
         self.list_action_undisplay.triggered.connect(self.core.undisplay_all)
         self.list_action_record.triggered.connect(lambda :viewOperationRecords())
+
+        def useThis():
+            name = self.listWidget.currentItem().text()
+            for i in range(self.Full_List.count()):
+                if self.Full_List.itemText(i) == name:
+                    self.Full_List.setCurrentIndex(i)
+                    return
+            for i in range(self.Pos_List.count()):
+                if self.Pos_List.itemText(i) == name:
+                    self.Pos_List.setCurrentIndex(i)
+                    return
+            for i in range(self.Neg_List.count()):
+                if self.Neg_List.itemText(i) == name:
+                    self.Neg_List.setCurrentIndex(i)
+                    return
+            pass
+
+        self.action_Data_Select.triggered.connect(useThis)
         
         def viewItem(*argv):
             name = self.listWidget.currentItem().text()
             self.core.selected = name
             self.action_View.trigger()
+
         def showMenu(pos):
             item = self.listWidget.currentItem()
             items = self.listWidget.selectedItems()
@@ -454,6 +521,10 @@ class Application(QMainWindow, Ui_MainWindow):
                     return self.translateText('scale data {source} use scale coefficient {scale} and shift coefficient {shift} to generate {target}').format(source=source,scale=round(param[0],4),shift=round(param[1],4),target=target)
                 if operation == 'combine':
                     return self.translateText('combine data {source0} and {source1} to generate {target}').format(source0=source[0],source1=source[1],target=target)
+                if operation == 'normalize':
+                    return self.translateText('normalize data {source} to generate SOC data {target}').format(source=source,target=target)
+                if operation == 'capacity':
+                    return self.translateText('amplify data {source} to generate data {target} with the maximum capacity of {param}').format(source=source,capacity=param,target=target)
             records = self.core.read_record(self.core.selected,True)
             records.reverse()
             text = ""
@@ -468,6 +539,8 @@ class Application(QMainWindow, Ui_MainWindow):
         self.listWidget.customContextMenuRequested.connect(showMenu)
         self.listWidget.changed.connect(updateOrder)
         self.listWidget.changed.connect(self.listenProjectFileState)
+        self.searchBtn.clicked.connect(lambda:self.updateList(self.searchText.text()))
+        self.searchText.returnPressed.connect(self.searchBtn.click)
 
     def bindButtonAction(self):
         self.Skip_Button.clicked.connect(self.checkSelectedBefore(self.core.skip_data))
@@ -484,14 +557,14 @@ class Application(QMainWindow, Ui_MainWindow):
         self.action_UserGuide.triggered.connect(lambda : self.previewFile(os.path.join(self.dirname,'resource/UserGuide.pdf')))
 
     def initCoreFunction(self):
-        self.core.auto_select = int(self.defaultSetting('Core/AutoSelect',0)) > 0
+        self.core.auto_select = int(self.defaultSetting('Core/AutoSelect',1)) > 0
         self.core.auto_scale = int(self.defaultSetting('Core/AutoScale',0)) > 0
-        self.core.auto_cal = int(self.defaultSetting('Core/AutoCalParam',0)) > 0
+        self.core.auto_cal = int(self.defaultSetting('Core/AutoCalParam',1)) > 0
         self.core.auto_guess = int(self.defaultSetting('Core/AutoGuess',0)) > 0
         self.core.max_capacity = float(self.defaultSetting('Core/MaxCapacity',0))
         self.core.use_max_capacity = int(self.defaultSetting('Core/UseMaxCapacity',0)) > 0
-        self.core.record_operation = int(self.defaultSetting('Core/OperationRecord',0)) > 0
-        self.core.max_points = int(self.defaultSetting('Core/MaxPoints',500))
+        self.core.record_operation = int(self.defaultSetting('Core/OperationRecord',1)) > 0
+        self.core.max_points = int(self.defaultSetting('Core/MaxPoints',2000))
         self.core.set_data_decimal_x(int(self.defaultSetting('Core/DecimalsX',6)))
         self.core.set_data_decimal_y(int(self.defaultSetting('Core/DecimalsY',12)))
         self.core.set_fitting_algorithm(self.defaultSetting('Core/Fitting','Manhattan'))
@@ -542,7 +615,9 @@ class Application(QMainWindow, Ui_MainWindow):
             "inter": self.defaultSetting('Core/SuffixInter','_P'),
             "scaledVdQ":self.defaultSetting('Core/SuffixScale1','_F'),
             "scaleVQ":self.defaultSetting('Core/SuffixScale2','_N'),
-            "gen":self.defaultSetting('Core/SuffixGen','_G')
+            "gen":self.defaultSetting('Core/SuffixGen','_G'),
+            "normalize":self.defaultSetting('Core/SuffixNormalize','_SOC'),
+            "capacity":self.defaultSetting('Core/SuffixCapacity','_CAP')
         }
 
     def initSmoothOptions(self):
@@ -639,7 +714,7 @@ class Application(QMainWindow, Ui_MainWindow):
         return func
 
     def alertBeforeDelete(self,fn):
-        if int(self.defaultSetting('UI/AlertBeforeDelete',0)) == 0:
+        if int(self.defaultSetting('UI/AlertBeforeDelete',1)) == 0:
             return fn()
         if self.prompt('Are you sure you want to delete?',msg='warnning') == QMessageBox.Yes:
             return fn()
@@ -652,14 +727,17 @@ class Application(QMainWindow, Ui_MainWindow):
                 self.critical(str(identifier))
         return func
 
-    def exportData(self):
+    def exportData(self,fn):
         lastFilePath = self.defaultSetting("File/lastFilePath",self.dirname)
-        defaultExtension = "Text File (*.txt)"
-        extensions = "All (*.txt;*.csv;*.xls;*.xlsx);;Text File (*.txt);;CSV File (*.csv);;Excel File (*.xls;*.xlsx)"
+        defaultExtension = "Excel File (*.xls;*.xlsx)"
+        extensions = "Text File (*.txt);;CSV File (*.csv);;Excel File (*.xls;*.xlsx)"
         (fileName,fileType) = QFileDialog.getSaveFileName(self,self.translateText("Save File"),lastFilePath,extensions,defaultExtension)
         if not fileName:
             return
-        File(fileName).write_data(self.core.datas[self.core.selected].tolist())
+        File(fileName).write_data(fn())
+        dirName = os.path.dirname(fileName)
+        self.settings.setValue('File/lastFilePath',dirName)
+        self.information('Export data successful!')
 
     def initGraphView(self):
         self.plot = PlotWidget(enableAutoRange=True)
@@ -715,9 +793,29 @@ class Application(QMainWindow, Ui_MainWindow):
         self.plot.getAxis('bottom').setPen(color=axisColor,width=axisWidth)
         self.plot.getAxis('left').setPen(color=axisColor,width=axisWidth)
 
-    def updateList(self):
+    def updateList(self,filter=""):
         keys = list(self.core.datas.keys())
         keys.sort(key=lambda x:self.core.order.index(x))
+        actions = [
+            self.action_Delete,
+            self.action_Delete_All,
+            self.action_View,
+            self.action_Swap,
+            self.action_Rename,
+            self.action_Normalize,
+            self.action_Amplify,
+            self.action_Data_Compare,
+            self.action_Electrode_Export,
+            self.action_Sheet_Export,
+            self.action_Data_FindPeak,
+            self.action_Data_Select
+        ]
+        if len(keys) > 0:
+            for action in actions:
+                action.setEnabled(True)
+        else:
+            for action in actions:
+                action.setDisabled(True)
         #删除曲线legand
         for i in range(self.listWidget.count()):
             item = self.listWidget.item(i)
@@ -730,10 +828,9 @@ class Application(QMainWindow, Ui_MainWindow):
         self.Neg_List.clear()
         self.Full_List.clear()
 
-        def isStartWith(str,patterm):
-            return patterm == str[:len(patterm)]
-
         for k in keys:
+            if filter != "" and not match(k,filter):
+                continue
             self.Data_List.addItem(k)
             item = QListWidgetItem(k)
             item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled | Qt.ItemIsDragEnabled)
@@ -879,6 +976,7 @@ class Application(QMainWindow, Ui_MainWindow):
 
     def drawScatterCurve(self):
         size = int(self.defaultSetting('Curve/size',5))
+        width = int(self.defaultSetting('Curve/width',3))
         colors = self.defaultSetting('Curve/colors',['FF0000', '0000FF', '00FF00', 'FFFF00', 'FF00FF', '00FFFF'])
         symbols = self.defaultSetting('Curve/symbols',['o', 's', 't', 't1', 't2', 't3', 'd', '+', 'x', 'p', 'h', 'star'])
         idx = 0
@@ -893,7 +991,8 @@ class Application(QMainWindow, Ui_MainWindow):
                 symbol = symbols[idx]
             else:
                 symbol = 'o'
-            self.plot.plot(*self.core.datas[text](),pen=color,symbolBrush=color, symbolPen=color, symbol=symbol, symbolSize=size, name=text)
+            pen = mkPen(color=color,width=width)
+            self.plot.plot(*self.core.datas[text](),pen=pen,symbolBrush=color, symbolPen=color, symbol=symbol, symbolSize=size, name=text)
             idx += 1
         self.plot.show()
 

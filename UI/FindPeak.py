@@ -7,6 +7,7 @@ from PyQt5.QtCore import Qt, Signal
 from PyQt5.QtWidgets import QWidget, QGridLayout, QGroupBox, QLineEdit, QLabel,QComboBox,QDesktopWidget, QPushButton, QTextEdit, QDoubleSpinBox,QAbstractSpinBox
 from pyqtgraph import PlotWidget, mkPen, mkColor, mkBrush, LinearRegionItem, ScatterPlotItem, PlotCurveItem, PlotDataItem, LinearRegionItem, InfiniteLine
 from scipy.integrate import simps
+from scipy.signal import find_peaks, find_peaks_cwt
 
 class SpinBox(QDoubleSpinBox):
     def __init__(self,suffix=None,lower=0,upper=None,dec=0,step=1,val=0):
@@ -88,7 +89,7 @@ class FindPeak(QWidget):
                 updateInput(False,False,False,False,False,True)
                 pass
             elif algorithm == "Matlab Like":
-                updateInput(True,True,False,True,True,False)
+                updateInput(True,True,False,True,True,True)
                 pass
             elif algorithm == "Gaussian":
                 updateInput(False,False,False,False,False,False)
@@ -99,8 +100,8 @@ class FindPeak(QWidget):
             elif algorithm == "Pseudo-Voigt":
                 updateInput(False,False,False,False,False,False)
                 pass
-            elif algorithm == "Continuous Wavelet Transform":
-                updateInput(True,True,False,True,True,False)
+            elif algorithm == "Wavelet Transform":
+                updateInput(True,True,True,False,False,False)
                 pass
         self.algorithm.currentTextChanged.connect(changeAlgorithm)
         updateInput(False,False,False,False,False,True)
@@ -117,18 +118,49 @@ class FindPeak(QWidget):
         def findPeak():
             region = np.where((x_data >= self.lower) & (x_data <= self.upper))
             sub_data = y_data[region]
+            sub_region = x_data[region]
             algorithm = self.algorithm.currentText()
             shape = self.shape.currentText()
+            if shape == "Peak":
+                const = 1
+            else:
+                const = -1
+            sub_data = sub_data * const
             if algorithm == "Extremum":
-                if shape == "Peak":
-                    peak = np.max(sub_data)
-                else:
-                    peak = np.min(sub_data)
-                idx = np.where((x_data >= self.lower) & (x_data <= self.upper) & (y_data == peak))
-                x = x_data[idx]
-                y = y_data[idx]
+                peak = np.max(sub_data)
+                idx = np.where(sub_data == peak)
+                x = sub_region[idx][0]
+                y = sub_data[idx][0] * const
                 self.peakCenter.setValue(x)
                 return self.renderPeakPoint([x,y])
+            elif algorithm == "Matlab Like":
+                indexes = find_peaks(sub_data,
+                    height=self.amplitude.value(),#低于指定高度忽略
+                    threshold=self.threshold.value(),#相邻两点高度差
+                    distance=self.detectDis.value(),#两峰间距
+                    width=self.peakWidth.value()#峰宽
+                )[0]
+                if np.size(indexes) == 0:
+                    return
+                idx = np.where(sub_data == np.max(sub_data[indexes]))
+                x = sub_region[idx][0]
+                y = sub_data[idx][0] * const
+                self.peakCenter.setValue(x)
+                return self.renderPeakPoint([x,y])
+            elif algorithm == "Wavelet Transform":
+                indexes = find_peaks_cwt(sub_data,
+                    widths=self.peakWidth.value(),#峰宽
+                    max_distances=self.detectDis.value(),#两峰间距
+                    noise_perc=self.noisePrt.value()
+                )[0]
+                if np.size(indexes) == 0:
+                    return
+                idx = np.where(sub_data == np.max(sub_data[indexes]))
+                x = sub_region[idx][0]
+                y = sub_data[idx][0] * const
+                self.peakCenter.setValue(x)
+                return self.renderPeakPoint([x,y])
+                self.noisePrt
             pass
         self.findBtn.clicked.connect(findPeak)
 
@@ -181,11 +213,11 @@ class FindPeak(QWidget):
         self.leftBound = SpinBox(lower=self.lower,dec=4,val=self.lower)
         self.rightBound = SpinBox(upper=self.upper,dec=4,val=self.upper)
         self.peakCenter = SpinBox(lower=self.lower,upper=self.upper,dec=4)
-        self.peakWidth = SpinBox(lower=self.lower,upper=self.upper,dec=4)
-        self.noisePrt = SpinBox(lower=0,upper=100,dec=4,step=1,val=10)
-        self.detectDis = SpinBox(lower=1)
-        self.amplitude = SpinBox(lower=1)
-        self.threshold = SpinBox(lower=1)
+        self.peakWidth = SpinBox(lower=1,upper=10000,val=5)
+        self.noisePrt = SpinBox(lower=0,upper=100,step=1,val=10)
+        self.detectDis = SpinBox(lower=1,val=3)
+        self.amplitude = SpinBox(lower=-1E5,upper=1E5,dec=4,val=-1)
+        self.threshold = SpinBox(lower=0,upper=100,dec=4,val=0.001)
         self.integralArea = SpinBox(upper=1E8,dec=4)
         self.integralArea.setReadOnly(True)
         self.integralArea.setButtonSymbols(QAbstractSpinBox.NoButtons)
@@ -196,7 +228,7 @@ class FindPeak(QWidget):
         #self.shape.currentTextChanged.connect()
 
         self.algorithm = QComboBox()
-        self.algorithm.addItems(['Extremum','Matlab Like','Gaussian','Lorentzian','Pseudo-Voigt','Continuous Wavelet Transform'])
+        self.algorithm.addItems(['Extremum','Matlab Like','Wavelet Transform','Gaussian','Lorentzian','Pseudo-Voigt'])
         #self.algorithm.currentTextChanged.connect()
         #https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.find_peaks_cwt.html
         layout.addWidget(self.leftBound,0,1,1,1)
@@ -249,5 +281,46 @@ class FindPeak(QWidget):
         if text in self.langText:
             return self.langText[text]
         return text
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

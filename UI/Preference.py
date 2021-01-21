@@ -33,7 +33,7 @@ class SwitchButton(QSlider):
         self.setFixedSize(50,20)
         self.setMinimum(0)
         self.setMaximum(1)
-        self.setOrientation(Qt.Orientation.Horizontal)
+        #self.setOrientation(Qt.Orientation.Horizontal)
 
     def paintEvent(self, event):
         """绘制按钮"""

@@ -80,7 +80,9 @@ class Engine:
             "inter": "_P",
             "scaledVdQ":"_F",
             "scaleVQ":"_N",
-            "gen":"_G"
+            "gen":"_G",
+            "normalize": "_SOC",
+            "capacity":"_CAP"
         }
 
         self.events = {
@@ -618,6 +620,10 @@ class Engine:
                 self.log_record("skip",self.skip_window,key,new_name)
             elif operation == "inter":
                 self.log_record("inter",[self.max_points,self.inter_order],key,new_name)
+            elif operation == 'normalize':
+                self.log_record('normalize',None,key,new_name)
+            elif operation == 'capacity':
+                self.log_record('capacity',self.max_capacity,key,new_name)
             self.auto_select and self.select(new_name)
 
     def smooth_data(self):
@@ -637,6 +643,16 @@ class Engine:
 
     def inter_data(self):
         self.modify_data(self.inter,'inter')
+
+    def normalize_data(self):
+        def normalize(datas):
+            return datas.normalize_x()
+        self.modify_data(normalize,'normalize')
+
+    def capacity_data(self):
+        def capacity(datas):
+            return datas.modify_x(self.max_capacity/datas.x_max,0)
+        self.modify_data(capacity,'capacity')
 
     def count_fit_data(self):
         value = 0
@@ -701,7 +717,7 @@ class Engine:
         self.auto_cal_param(w2,2)
         self.auto_cal_param(s2,3)
         self.auto_cal_param(w1 * pos.x_max - full.x_max - s1,4)
-        self.auto_cal_param(w2 * pos.x_max - full.x_max - s2,5)
+        self.auto_cal_param(w2 * neg.x_max - full.x_max - s2,5)
         self.triggle('fitting')
         self.auto_scale and self.scale_data()
         return params
@@ -844,3 +860,66 @@ class Engine:
     def undisplay_all(self):
         self.for_display = []
         self.triggle('change')
+
+    def compare_datas(self,sa,sb,count):
+        a = self.get_data(sa)
+        b = self.get_data(sb)
+        lower = max(a.x_min,b.x_min)
+        upper = min(a.x_max,b.x_max)
+        maximum = max(a.x_max,b.x_max)
+        array = np.linspace(lower,upper,count+1)
+        percent = array * 100 / maximum
+        X = np.linspace(lower,upper,2000)
+        Y1 = interp1d(*a(), fill_value="extrapolate")(X)
+        Y2 = interp1d(*b(), fill_value="extrapolate")(X)
+        table = [
+            ['区间比例'],
+            ['容量范围'],
+            ['测试曲线电压范围'],
+            ['拟合曲线电压范围'],
+            ['电压极差mV'],
+            ['极差电压对应容量mAh'],
+            ['极差电压对应容量%'],
+            ['容量极差mAh'],
+            ['容量极差%'],
+            ['极差容量对应电压V'],
+        ]
+        for i in range(len(array)-1):
+            lower = array[i]
+            upper = array[i+1]
+            region = np.where((X >= lower) & (X <= upper))
+            sub_x = X[region]
+            sub_y1 = Y1[region]
+            sub_y2 = Y2[region]
+            table[0].append('%.2f %% ~ %.2f %%' % (percent[i],percent[i+1]))
+            table[1].append('%.2f ~ %.2f' % (lower,upper))
+            table[2].append('%.4f ~ %.4f' % (sub_y1[0],sub_y1[-1]))
+            table[3].append('%.4f ~ %.4f' % (sub_y2[0],sub_y2[-1]))
+            dif_y = sub_y2 - sub_y1
+            abs_dif_y = np.abs(dif_y)
+            pos = np.argmax(abs_dif_y)
+            table[4].append('%.2f' % (dif_y[pos] * 1000))
+            table[5].append('%.2f' % sub_x[pos])
+            table[6].append('%.2f %%' % (sub_x[pos] * 100 / maximum))
+            if min(sub_y1) > max(sub_y2):
+                table[7].append('-∞')
+                table[8].append('-∞')
+                table[9].append('—')
+            elif min(sub_y2) > max(sub_y1):
+                table[7].append('+∞')
+                table[8].append('+∞')
+                table[9].append('—')
+            else:
+                lower = max(np.min(sub_y1),np.min(sub_y2))
+                upper = min(np.max(sub_y1),np.max(sub_y2))
+                Y = np.linspace(lower,upper,500)
+                X1 = interp1d(sub_y1,sub_x, fill_value="extrapolate")(Y)
+                X2 = interp1d(sub_y2,sub_x, fill_value="extrapolate")(Y)
+                dif_x = X2 - X1
+                abs_dif_x = np.abs(dif_x)
+                pos = np.argmax(abs_dif_x)
+                table[7].append('%.2f' % dif_x[pos])
+                table[8].append('%.2f %%' % (dif_x[pos] * 100 / maximum))
+                table[9].append('%.4f' % Y[pos])
+        return table
+            
