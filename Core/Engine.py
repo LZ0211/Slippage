@@ -835,14 +835,23 @@ class Engine:
         self.triggle('change')
 
     def export_scale_data(self):
-        if self.count_fit_data() < 7:
-            return
         pos_name,neg_name,full_name = self.for_fitting
         pos = self.get_data(pos_name)
         neg = self.get_data(neg_name)
-        full = self.get_data(full_name)
         pos = pos.modify_x(*self.params[0:2])
         neg = neg.modify_x(*self.params[2:4])
+        if self.auto_cal and self.max_capacity > 0:
+            x_data = np.linspace(0,self.max_capacity,self.max_points)
+            pos_y = interp1d(*pos(), fill_value="extrapolate")(x_data)
+            neg_y = interp1d(*neg(), fill_value="extrapolate")(x_data)
+            data = np.vstack((x_data,pos_y,neg_y,pos_y - neg_y)).T
+            data = data.tolist()
+            header = ['容量','拟合正极电压','拟合负极电压','拟合全电池电压']
+            data.insert(0,header)
+            return data
+        if self.count_fit_data() < 7:
+            return
+        full = self.get_data(full_name)
         x_data = np.linspace(0,full.x_max,self.max_points)
         pos_y = interp1d(*pos(), fill_value="extrapolate")(x_data)
         neg_y = interp1d(*neg(), fill_value="extrapolate")(x_data)

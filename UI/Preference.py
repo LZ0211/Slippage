@@ -33,7 +33,7 @@ class SwitchButton(QSlider):
         self.setFixedSize(50,20)
         self.setMinimum(0)
         self.setMaximum(1)
-        #self.setOrientation(Qt.Orientation.Horizontal)
+        self.setOrientation(Qt.Orientation.Horizontal)
 
     def paintEvent(self, event):
         """绘制按钮"""
@@ -139,6 +139,8 @@ class Preference(QWidget):
         self.setLayout(hbox)
 
         self.list.currentRowChanged.connect(self.display)
+        index = int(self.defaultSetting("Display/Preference",0))
+        self.list.setCurrentRow(index)
 
     def tab1UI(self):
         layout = QFormLayout()
@@ -466,6 +468,7 @@ class Preference(QWidget):
 
     def display(self,index):
         self.stack.setCurrentIndex(index)
+        self.setSetting("Display/Preference",index)
 
     def closeEvent(self, QCloseEvent):
         if self.parent:

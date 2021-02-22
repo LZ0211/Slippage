@@ -8,6 +8,7 @@ from pyqtgraph import PlotWidget, mkPen, mkColor, LinearRegionItem, ScatterPlotI
 from .Window import Ui_MainWindow
 from .Preference import Preference
 from .FindPeak import FindPeak
+from .Design import  Design
 
 def match(text,filter):
     keys = filter.split()
@@ -76,6 +77,8 @@ class Application(QMainWindow, Ui_MainWindow):
         self.bindEditAction()
         #数据操作菜单
         self.bindDataAction()
+        #功能菜单
+        self.bindCoreAction()
         #切换语言
         self.bindLanguageAction()
         #退出
@@ -323,16 +326,22 @@ class Application(QMainWindow, Ui_MainWindow):
             data = self.core.export_scale_data()
             if data == None:
                 return
-            self.information('\n'.join([
+            lines = [
                 self.translateText('Positive Full Charge Potential: ') + "%.3f" % data[1][1] + "\t" + self.translateText('Positive Full Discharge Potential: ') + "%.3f" % data[-1][1],
                 self.translateText('Negative Full Charge Potential: ') + "%.3f" % data[1][2] + "\t" + self.translateText('Negative Full Discharge Potential: ') + "%.3f" % data[-1][2],
-                self.translateText('Cell Full Charge Potential: ') + "%.3f" % data[1][3] + "\t" + self.translateText('Cell Full Discharge Potential: ') + "%.3f" % data[-1][3],
-                self.translateText('Measured Full Charge Potential: ')  + "%.3f" % data[1][4] + "\t" + self.translateText('Measured Full Discharge Potential: ') + "%.3f" % data[-1][4],
+                self.translateText('Cell Full Charge Potential: ') + "%.3f" % data[1][3] + "\t" + self.translateText('Cell Full Discharge Potential: ') + "%.3f" % data[-1][3]
+            ]
+            if len(data[0]) == 5:
+                lines.append(
+                    self.translateText('Measured Full Charge Potential: ')  + "%.3f" % data[1][4] + "\t" + self.translateText('Measured Full Discharge Potential: ') + "%.3f" % data[-1][4]
+                )
+            lines = lines + [
                 self.translateText('Positive Left Shift: ') + "%.3f" % self.core.params[1],
                 self.translateText('Positive Right Shift: ') + "%.3f" % self.core.params[4],
                 self.translateText('Negative Left Shift: ') + "%.3f" % self.core.params[3],
                 self.translateText('Negative Right Shift: ') + "%.3f" % self.core.params[5]
-            ]))
+            ]
+            self.information('\n'.join(lines))
 
         def compare():
             if len(self.core.for_display) < 2:
@@ -556,6 +565,14 @@ class Application(QMainWindow, Ui_MainWindow):
         self.action_Author_Email.triggered.connect(lambda :self.information('Please contact author: WangC7@ATLBattery.com'))
         self.action_UserGuide.triggered.connect(lambda : self.previewFile(os.path.join(self.dirname,'resource/UserGuide.pdf')))
 
+    def bindCoreAction(self):
+        self.action_Design.triggered.connect(self.showDesigner)
+
+    def showDesigner(self):
+        if self.core.auto_cal and self.core.max_capacity > 0:
+            self.designer = Design(self)
+            self.designer.show()
+
     def initCoreFunction(self):
         self.core.auto_select = int(self.defaultSetting('Core/AutoSelect',1)) > 0
         self.core.auto_scale = int(self.defaultSetting('Core/AutoScale',0)) > 0
@@ -569,6 +586,7 @@ class Application(QMainWindow, Ui_MainWindow):
         self.core.set_data_decimal_y(int(self.defaultSetting('Core/DecimalsY',12)))
         self.core.set_fitting_algorithm(self.defaultSetting('Core/Fitting','Manhattan'))
         if not self.core.auto_cal or self.core.max_capacity <= 0:
+            self.action_Design.setDisabled(True)
             self.Pos_Shift2_Label.setDisabled(True)
             self.Pos_Shift2_Slider.setDisabled(True)
             self.Pos_Shift2_SpinBox.setDisabled(True)
@@ -582,12 +600,13 @@ class Application(QMainWindow, Ui_MainWindow):
             self.Neg_Scale_checkBox.setEnabled(True)
             self.Neg_Shift_checkBox.setEnabled(True)
             self.Fitting_Button.setEnabled(True)
-            self.Full_List.setCurrentIndex(0)
+            #self.Full_List.setCurrentIndex(0)
             self.Full_List.setEnabled(True)
             self.action_Data_Write.setEnabled(True)
             self.action_Data_View.setEnabled(True)
             self.action_Data_Export.setEnabled(True)
         else:
+            self.action_Design.setEnabled(True)
             self.Pos_Shift2_Label.setEnabled(True)
             self.Pos_Shift2_Slider.setEnabled(True)
             self.Pos_Shift2_SpinBox.setEnabled(True)
@@ -601,7 +620,7 @@ class Application(QMainWindow, Ui_MainWindow):
             self.Neg_Scale_checkBox.setDisabled(True)
             self.Neg_Shift_checkBox.setDisabled(True)
             self.Fitting_Button.setDisabled(True)
-            self.Full_List.setCurrentText('')
+            #self.Full_List.setCurrentText('')
             self.Full_List.setDisabled(True)
             self.action_Data_Write.setDisabled(True)
             self.action_Data_View.setDisabled(True)
@@ -808,7 +827,8 @@ class Application(QMainWindow, Ui_MainWindow):
             self.action_Electrode_Export,
             self.action_Sheet_Export,
             self.action_Data_FindPeak,
-            self.action_Data_Select
+            self.action_Data_Select,
+            #self.action_Design
         ]
         if len(keys) > 0:
             for action in actions:

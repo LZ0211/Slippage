@@ -102,3 +102,25 @@ class DataSet:
 
     def serialize(self):
         return [self.x_data.tolist(),self.y_data.tolist()]
+
+    def interpolate(self,x):
+        y = interp1d(self.x_data,self.y_data,kind='quadratic')(x)
+        return DataSet(x,y)
+
+    def posValue(self,x):
+        if self.x_min > x or self.x_max < x:
+            return None
+        data = self.x_data
+        lower = np.argwhere(data <= x)
+        step = min(lower.size,5)
+        lower = lower[0-step][0]
+        upper = np.argwhere(data >= x)
+        step = min(upper.size,5)
+        upper = upper[step][0]
+        sub_X = self.x_data[lower:upper]
+        sub_Y = self.y_data[lower:upper]
+        #print(sub_X,sub_Y)
+        return interp1d(sub_X,sub_Y,kind='quadratic')(np.array([x]))[0]
+
+    def copy(self,x,y):
+        return DataSet(x,y)
